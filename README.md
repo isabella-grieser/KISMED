@@ -1,6 +1,6 @@
 # 18-ha-2010-pj
-Demo-Code zum Projektseminar "Wettbewerb künstliche Intelligenz in der Medizin" WiSe 2021/2022. Das Beispiel definiert gleichzeitig das Interface zu unserem Evaluierungs-System.
-
+Code zum Projektseminar "Wettbewerb künstliche Intelligenz in der Medizin" 
+SoSe 2022 von der Gruppe "Beats by Dr.DeepAI"
 ## Erste Schritte
 
 1. Klone/Forke dieses Repository
