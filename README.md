@@ -1,6 +1,6 @@
 # 18-ha-2010-pj
 Code zum Projektseminar "Wettbewerb künstliche Intelligenz in der Medizin" 
-SoSe 2022 von der Gruppe "Beats by Dr.DeepAI"
+SoSe 2022 von der Gruppe "Beats by Dr.DeepAI".
 ## Erste Schritte
 
 1. Klone/Forke dieses Repository
