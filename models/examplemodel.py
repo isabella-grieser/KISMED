@@ -75,5 +75,5 @@ class ExampleModel(BaseModel):
         axs[1].set_ylabel("Anzahl")
         plt.show()
 
-    def test(self, test):
+    def test(self, test_data, test_labels):
         pass
