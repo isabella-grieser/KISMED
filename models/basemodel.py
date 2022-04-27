@@ -8,23 +8,21 @@ class BaseModel:
     def __init__(self):
         pass
 
-    def train(self, train_data, train_label, val_data, val_label, fs, ecg_names):
+    def train(self, train_data, train_label, val_data, val_label, fs):
         """
         Train the model with the given data
         Parameters
         ----------
-        train_data :
+        train_data :list[numpy.array]
                     training EKG data
-        train_label :
+        train_label :list[str]
                     training EKG labels
-        val_data :
+        val_data :  list[numpy.array]
                     validation EKG data
-        val_label :
+        val_label : list[str]
                     validation EKG labels
-        fs :
+        fs :        int
                     sampling frequency
-        ecg_names :  str, optional
-                    name
         """
         pass
 
@@ -34,9 +32,9 @@ class BaseModel:
 
         Parameters
         ----------
-        test_data :
+        test_data : list[numpy.array]
                     test EKG data
-        test_label :
+        test_label :list[str]
                     test EKG labels
         Returns
         -------

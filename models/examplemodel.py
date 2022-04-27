@@ -10,7 +10,7 @@ class ExampleModel(BaseModel):
     def __init__(self):
         pass
 
-    def train(self, train_data, train_label, val_data, val_label, fs, ecg_names):
+    def train(self, train_data, train_label, val_data, val_label, fs):
         detectors = Detectors(fs)  # Initialisierung des QRS-Detektors
         sdnn_normal = np.array([])  # Initialisierung der Feature-Arrays
         sdnn_afib = np.array([])
