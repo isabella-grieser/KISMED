@@ -1,8 +1,7 @@
 from models.deepmlmodel import DeepMLModel
-from models.examplemodel import ExampleModel
 from wettbewerb import load_references
-from preprocessing import *
-from utils import *
+from preprocessing.preprocessing import *
+from utils.utils import *
 import time
 
 if __name__ == '__main__':
@@ -20,7 +19,6 @@ if __name__ == '__main__':
 
     #TODO: model testing
     start_time = time.time()
-    model.test(test_data, test_labels)
+    model.test(train_data, train_labels, fs)
     pred_time = time.time() - start_time
-
-    #preditions for the unlabeled data set
+    print(f'time needed for prediction calculation: {pred_time}')

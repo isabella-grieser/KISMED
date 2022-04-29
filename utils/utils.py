@@ -6,5 +6,7 @@ def calc_data_amount(labels):
     a = sum(1 for l in labels if l == 'A')
     n = sum(1 for l in labels if l == 'N')
     char = sum(1 for l in labels if l == '~')
+
     print(f'total data amount: {len(labels)}')
+    print(f'all label types: {set(labels)}')
     print(f'data amount: label O: {o}; label N: {n}; label A: {a}; label ~: {char}')

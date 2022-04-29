@@ -8,7 +8,7 @@ import os
 
 class ExampleModel(BaseModel):
     def __init__(self):
-        pass
+        self.th_opt = 0
 
     def train(self, train_data, train_label, val_data, val_label, fs):
         detectors = Detectors(fs)  # Initialisierung des QRS-Detektors
@@ -50,6 +50,7 @@ class ExampleModel(BaseModel):
             F1 = np.append(F1, TP / (TP + 1 / 2 * (FP + FN)))  # Berechnung des F1-Scores
 
         th_opt = thresholds[np.argmax(F1)]  # Bestimmung des Schwellwertes mit dem höchsten F1-Score
+        self.th_opt = th_opt
 
         if os.path.exists("model.npy"):
             os.remove("model.npy")
@@ -75,5 +76,23 @@ class ExampleModel(BaseModel):
         axs[1].set_ylabel("Anzahl")
         plt.show()
 
-    def test(self, test_data, test_labels):
-        pass
+    def test(self, test_data, test_labels, fs):
+        detectors = Detectors(fs)
+        r_peaks = detectors.hamilton_detector(test_data)  # Detektion der QRS-Komplexe
+        peaks_A = []
+        peaks_N = []
+        for d, l in zip(r_peaks, test_labels):
+            if l == "N":
+                peaks_N.append(d)
+            if l == "A":
+                peaks_A.append(d)
+
+        sdnn_A = np.std(np.diff(peaks_A) / fs * 1000)
+        sdnn_N = np.std(np.diff(peaks_N) / fs * 1000)
+
+        TP = np.sum(sdnn_A >= self.th_opt)  # Richtig Positiv
+        FP = np.sum(sdnn_N >= self.th_opt)  # Falsch Positiv
+        FN = np.sum(sdnn_A < self.th_opt)  # Falsch Negativ
+
+
+        return TP / (TP + 1 / 2 * (FP + FN))

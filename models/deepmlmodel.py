@@ -8,5 +8,5 @@ class DeepMLModel(BaseModel):
     def train(self, train_data, train_labels, val_data, val_labels, fs):
         pass
 
-    def test(self, test_data, test_labels):
+    def test(self, test_data, test_labels, fs):
         pass
