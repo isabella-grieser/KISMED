@@ -21,8 +21,8 @@ def preprocess(data, labels):
     """
     return data, labels, [], [], [], []
 
-def remove_noise(signal):
-    n = 15
+def remove_noise_iir(signal, n=15, b=1):
+    # the larger n is, the smoother curve will be
     a = [1.0 / n] * n
     b = 1
     return lfilter(a, b, signal)
