@@ -16,7 +16,8 @@ def plot_signal(signal, plot):
     plot.plot([n for n in range(len(signal))], signal)
 
 
-def plot_clusters(values, labels):
+def plot_clusters(values, labels, title=""):
     for l in set(labels):
         y = [v for v, label in zip(values, labels) if label == l]
         plt.scatter([l for i in range(len(y))], y, alpha=0.5)
+        plt.title(title)
