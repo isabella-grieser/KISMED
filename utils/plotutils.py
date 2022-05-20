@@ -1,14 +1,18 @@
 import matplotlib.pyplot as plt
 
 
-def plot_all_signals(signals, labels):
+def plot_all_signals(signals, labels, title='Vertically stacked subplots'):
     label_set = set(labels)
     fig, axs = plt.subplots(len(set(labels)))
-    fig.suptitle('Vertically stacked subplots')
+    fig.suptitle(title)
     for i, l in enumerate(label_set):
         sigs = [v for v, label in zip(signals, labels) if label == l]
         for s in sigs:
-            plot_signal(s, axs[i])
+            if len(label_set) == 1:
+                plot_signal(s, axs)
+            else:
+                plot_signal(s, axs[i])
+        axs[i].title.set_text(l)
     plt.show()
 
 
