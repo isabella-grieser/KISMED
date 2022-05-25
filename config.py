@@ -1,16 +1,26 @@
+from enum import Enum
 
+class ProblemType(Enum):
+    FOUR_CLASS = 1
+    BINARY = 2
 
 #data params
-TRAIN_SPLIT = .7
-VAL_SPLIT = .2
+TRAIN_SPLIT = .8
+VAL_SPLIT = .1
 TEST_SPLIT = .1
+
+DATA_SIZE = 4500
+
+SEED = 17
 #model params
 EPOCHS = 100
-LEARNING_RATE = 1e-3
+LEARNING_RATE = 1e-5
 TRAIN_BATCH = 16
-TEST_BATCH=32
+TEST_BATCH = 32
+TYPE = ProblemType.BINARY
+MODEL_PATH = ""
 #heartbeat params (given a sampling frequency in Hz)
 #in ms
-BF_PEAK_LEN = 250
-AFT_PEAK_LEN = 500
+BF_PEAK_LEN = 400
+AFT_PEAK_LEN = 250
 
