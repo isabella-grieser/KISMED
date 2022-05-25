@@ -26,7 +26,7 @@ class BaseModel:
         """
         pass
 
-    def test(self, test_data, fs):
+    def test(self, test_data, test_labels, fs):
         """
         Test the model with the given data
 
@@ -40,7 +40,23 @@ class BaseModel:
                     sampling frequency
         Returns
         -------
-        score: float
+        score: dict
                 F1 score of the test data
+        """
+        pass
+
+    def predict(self, test_data, fs):
+        """
+        Test the model with the given data
+
+        Parameters
+        ----------
+        test_data : list[numpy.array]
+                    test EKG data
+        fs :        int
+                    sampling frequency
+        Returns
+        -------
+        score: list
         """
         pass
