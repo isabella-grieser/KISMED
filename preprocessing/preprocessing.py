@@ -1,6 +1,7 @@
 from scipy.signal import lfilter
 from sklearn.model_selection import train_test_split
 import numpy as np
+import neurokit2 as nk
 from config import *
 
 
