@@ -21,7 +21,7 @@ class LSTMModel(BaseModel):
 
     def __init__(self, input_size):
 
-        self.model_path = "checkpoint/lstm/binary/model.hdf5"
+        self.model_path = "model_weights/lstm/binary/model.hdf5"
         super(BaseModel, self).__init__()
 
         # model definition
