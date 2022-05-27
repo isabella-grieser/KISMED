@@ -21,7 +21,7 @@ class LSTMModel(BaseModel):
 
     def __init__(self, input_size):
 
-        self.model_path = "model_weights/lstm/binary/model.hdf5"
+        self.model_path = f"model_weights/lstm/binary/model-{MODEL_VERSION}.hdf5"
         super(BaseModel, self).__init__()
 
         # model definition
@@ -67,10 +67,10 @@ class LSTMModel(BaseModel):
                 save_weights_only=True
             ),
             keras.callbacks.EarlyStopping(
-                monitor="val_precision",
+                monitor="val_precision", # TODO: why am I unable to use val_f1_score as the monitor param?
                 mode='max',
                 min_delta=0,
-                patience=5,
+                patience=50,
                 restore_best_weights=True,
             )
 
@@ -97,7 +97,7 @@ class LSTMModel(BaseModel):
 
     def test(self, test_data, test_labels, fs):
 
-        y_pred = self.predict(test_data, fs)
+        y_pred = labels_to_encodings(self.predict(test_data, fs))
         y_true = labels_to_encodings(test_labels)
 
         metrics = {
@@ -119,15 +119,19 @@ class LSTMModel(BaseModel):
             ind = np.argmax(counts)
             y_pred.append(values[ind])
 
-        return y_pred
+        return encodings_to_labels(y_pred)
 
     def preprocess(self, data, labels, fs):
-        # signals, labels = divide_all_signals(data, labels, DATA_SIZE)
-        signals, labels = divide_all_signals_in_heartbeats(data, labels, fs)
+        
+        signals = [invert2(d) for d in data]
         signals = [normalize_data(s) for s in signals]
+        signals = [remove_noise_butterworth(s, fs) for s in signals]
+        signals, labels = divide_all_signals_in_heartbeats(signals, labels, fs)
+
         signals = np.stack(signals, axis=0)
         signal_len = len(signals)
         data_len = len(signals[0])
         signals = signals.reshape(signal_len, data_len)
+
         labels = keras.utils.to_categorical(labels_to_encodings(labels)).reshape(signal_len, -1)
         return signals, labels

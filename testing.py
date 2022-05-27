@@ -1,9 +1,9 @@
 from matplotlib import pyplot as plt
 
-from preprocessing.preprocessing import remove_noise_iir
 from utils.plotutils import *
 from wettbewerb import load_references
 from preprocessing.padding import *
+from preprocessing.preprocessing import *
 from preprocessing.features import *
 
 if __name__ == '__main__':
@@ -24,5 +24,9 @@ if __name__ == '__main__':
         h = divide_heartbeats(s, fs)
         heartbeats.extend(h)
         heartbeat_labels.extend([l for r in range(len(h))])
-    plot_all_signals(heartbeats[:100], labels[:100], title='heartbeats')
 
+    # plot_all_signals(heartbeats[:100], labels[:100], title='heartbeats')
+
+    plot_signal(signals[15], plt)
+    plot_signal(remove_noise_butterworth(signals[15], fs), plt)
+    plt.show()

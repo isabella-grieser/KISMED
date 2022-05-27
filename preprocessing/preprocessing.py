@@ -1,28 +1,12 @@
 from scipy.signal import lfilter
 from sklearn.model_selection import train_test_split
 import numpy as np
+from scipy import signal
 import neurokit2 as nk
 from config import *
 
 
 def preprocess(data, labels):
-    """
-    preprocess the data and divide it into train, val and test set
-    Parameters
-    ----------
-    data : the total data
-    labels : the total labels
-    Returns
-    ----------
-    train data
-    train labels
-    val data
-    val labels
-    test data
-    test labels
-    -------
-
-    """
     if TYPE == ProblemType.BINARY:
         data = [d for d, l in zip(data, labels) if l == "N" or l == "A"]
         labels = [l for l in labels if l == "N" or l == "A"]
@@ -30,17 +14,24 @@ def preprocess(data, labels):
     data_train, data_rest, y_train, y_rest = train_test_split(data, labels,
                                                               train_size=TRAIN_SPLIT,
                                                               stratify=labels,
-                                                              random_state=SEED)
+                                                              random_state=SEED,
+                                                              shuffle=True)
     data_val, data_test, y_val, y_test = train_test_split(data_rest, y_rest,
                                                           train_size=VAL_SPLIT/TRAIN_SPLIT,
                                                           stratify=y_rest,
-                                                          random_state=SEED)
+                                                          random_state=SEED,
+                                                          shuffle=True)
     return data_train, y_train, data_val, y_val, data_test, y_test
 
-def remove_noise_iir(signal, n=15, b=1):
-    # the larger n is, the smoother curve will be
-    a = [1.0 / n] * n
-    return lfilter(a, b, signal)
+def remove_noise_butterworth(s, fs):
+    # highpass filter to remove baseline wander noise
+    highpass = signal.butter(7, Wn=0.5, btype="highpass", fs=fs, output="sos")
+    first_filter_output = signal.sosfilt(highpass, s)
+    # lowpass filter to remove high frequency noise
+    lowpass = signal.butter(6, Wn=45, btype="lowpass", fs=fs, output="sos")
+    output = signal.sosfilt(lowpass, first_filter_output)
+    return output
+
 
 def normalize_data(data):
     mini = np.min(data)

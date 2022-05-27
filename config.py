@@ -12,15 +12,18 @@ TEST_SPLIT = .1
 DATA_SIZE = 4500
 
 SEED = 17
+
+
 #model params
 EPOCHS = 100
 LEARNING_RATE = 1e-5
 TRAIN_BATCH = 16
 TEST_BATCH = 32
 TYPE = ProblemType.BINARY
-MODEL_PATH = ""
+MODEL_VERSION = "v2"
+
 #heartbeat params (given a sampling frequency in Hz)
 #in ms
-BF_PEAK_LEN = 400
+BF_PEAK_LEN = 500
 AFT_PEAK_LEN = 250
 
