@@ -41,3 +41,22 @@ def rri_std(signals, fs):
             rri_std.append(-1)
     return rri_std
 
+def distribution_score(r_peaks, sig):
+ 
+    first_peak = r_peaks[0]
+    last_peak = r_peaks[-2]   #Ignore last r_peak for now to avoid overflow error
+    sig = sig[first_peak: last_peak+1]
+    samples_per_beat = len(sig)/ len(r_peaks - 1)
+    
+    #Set threshold
+    lower_thresh = samples_per_beat - 30    
+    higher_thresh = samples_per_beat + 30
+
+    cumdiff = np.diff(r_peaks)
+    
+    #Number of R-R durations lie inside threshold
+    len_center_idx = len([i for i in cumdiff if i > lower_thresh and i < higher_thresh])
+    score =  len_center_idx/ len(cumdiff)
+
+    return score
+
