@@ -42,7 +42,7 @@ class LSTMModel(BaseModel):
         self.model.add(keras.layers.BatchNormalization())
         self.model.add(keras.layers.MaxPooling1D(pool_size=2))
 
-        self.model.add(keras.layers.LSTM(248, return_sequences=True, dropout=0.2))  # LSTM layer
+        self.model.add(keras.layers.LSTM(246, return_sequences=True))  # LSTM layer
         self.model.add(keras.layers.Flatten())
         self.model.add(keras.layers.Dense(128, activation='relu'))  # dense layer
         if TYPE == ProblemType.BINARY:
@@ -81,7 +81,7 @@ class LSTMModel(BaseModel):
             loss=keras.losses.BinaryCrossentropy(),
             metrics=[
                 tfa.metrics.F1Score(num_classes=2),
-                keras.metrics.Accuracy(),
+                keras.metrics.BinaryAccuracy(),
                 keras.metrics.Precision(),
                 keras.metrics.Recall()
             ]
@@ -113,7 +113,7 @@ class LSTMModel(BaseModel):
         y_pred = []
         for t in test_data:
             data, _ = self.preprocess([t], ["N"], fs)
-            y = np.argmax(self.model.predict(data), axis=1)
+            y = np.argmax(self.model.predict(data, verbose=0), axis=1)
             # majority voting
             values, counts = np.unique(y, return_counts=True)
             ind = np.argmax(counts)
@@ -122,10 +122,10 @@ class LSTMModel(BaseModel):
         return encodings_to_labels(y_pred)
 
     def preprocess(self, data, labels, fs):
-        
+
         signals = [invert2(d) for d in data]
-        signals = [normalize_data(s) for s in signals]
         signals = [remove_noise_butterworth(s, fs) for s in signals]
+        signals = [normalize_data2(s) for s in signals]
         signals, labels = divide_all_signals_in_heartbeats(signals, labels, fs)
 
         signals = np.stack(signals, axis=0)
