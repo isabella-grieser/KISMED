@@ -53,6 +53,13 @@ def divide_all_signals(signals, labels, size):
 def divide_heartbeats(signal, fs):
     peaks = Detectors(fs).hamilton_detector(signal)
     _, rpeaks = nk.ecg_peaks(signal, sampling_rate=fs)
+
+    # Fix: else 'list index out of range'
+    if len(rpeaks['ECG_R_Peaks'])==0:
+        print('No R-Peaks found in signal!')
+        # TODO: calling methods have to deal with []
+        return []
+
     start_size = int(fs * BF_PEAK_LEN*10**(-3))
     end_size = int(fs * AFT_PEAK_LEN*10**(-3))
     total_size = len(signal)
@@ -62,7 +69,7 @@ def divide_heartbeats(signal, fs):
         end = p + end_size if p + end_size < total_size else total_size
         heartbeats.append(signal[start:end])
     #additional padding may be necessary
-    beats = [prev_val_padding(heartbeats[0], start_size + end_size) for h in range(len(heartbeats)-1)]
+    beats = [prev_val_padding(heartbeats[h], start_size + end_size) for h in range(len(heartbeats)-1)]  # bugfix: 0->h
     beats.append(prev_val_padding(heartbeats[len(heartbeats)-1], start_size + end_size, end_padding=True))
 
     return beats
