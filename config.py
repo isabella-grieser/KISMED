@@ -20,7 +20,7 @@ LEARNING_RATE = 1e-5
 TRAIN_BATCH = 16
 TEST_BATCH = 32
 TYPE = ProblemType.BINARY
-MODEL_VERSION = "v2"
+MODEL_VERSION = "v3"
 
 #heartbeat params (given a sampling frequency in Hz)
 #in ms

@@ -22,3 +22,5 @@ if __name__ == '__main__':
     print(model.test(test_data, test_labels, fs))
     pred_time = time.time() - start_time
     print(f'time needed for prediction calculation: {pred_time}')
+
+    print(model.predict(test_data, fs))

@@ -42,9 +42,10 @@ class LSTMModel(BaseModel):
         self.model.add(keras.layers.BatchNormalization())
         self.model.add(keras.layers.MaxPooling1D(pool_size=2))
 
-        self.model.add(keras.layers.LSTM(246, return_sequences=True))  # LSTM layer
+        self.model.add(keras.layers.Bidirectional(keras.layers.LSTM(128, return_sequences=True, dropout=0.2)))  # LSTM layer
         self.model.add(keras.layers.Flatten())
-        self.model.add(keras.layers.Dense(128, activation='relu'))  # dense layer
+        self.model.add(keras.layers.Dense(256, activation='relu'))  # dense layer
+        self.model.add(keras.layers.Dropout(0.2))
         if TYPE == ProblemType.BINARY:
             self.model.add(keras.layers.Dense(2))
         else:
@@ -67,14 +68,14 @@ class LSTMModel(BaseModel):
                 save_weights_only=True
             ),
             keras.callbacks.EarlyStopping(
-                monitor="val_precision", # TODO: why am I unable to use val_f1_score as the monitor param?
+                monitor="val_recall",
                 mode='max',
                 min_delta=0,
-                patience=50,
+                patience=15,
                 restore_best_weights=True,
             )
-
         ]
+
         # model compilation
         self.model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=LEARNING_RATE),
@@ -121,11 +122,11 @@ class LSTMModel(BaseModel):
 
         return encodings_to_labels(y_pred)
 
-    def preprocess(self, data, labels, fs):
+    def preprocess(self, signals, labels, fs):
 
-        signals = [invert2(d) for d in data]
+        # signals = [invert2(s) for s in signals]
         signals = [remove_noise_butterworth(s, fs) for s in signals]
-        signals = [normalize_data2(s) for s in signals]
+        signals = [normalize_data(s) for s in signals]
         signals, labels = divide_all_signals_in_heartbeats(signals, labels, fs)
 
         signals = np.stack(signals, axis=0)
