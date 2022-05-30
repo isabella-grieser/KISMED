@@ -69,7 +69,7 @@ def poincare_sd(r_peaks):   #input argument r_peaks in samples only
     r_peaks = r_peaks*10/3  #Convert r_peaks from samples to time of occurence in millisec 
     rr = np.diff(r_peaks)
     rr_n = rr[:-1]
-    rr_n1 = rr[1:]  #shifted rr duration by 1
+    rr_n1 = rr[1:]  #shifted rr duration
     sd1 = np.sqrt(0.5) * np.std(rr_n1 - rr_n)
     sd2 = np.sqrt(0.5) * np.std(rr_n1 + rr_n)
     return sd1, sd2, sd1/sd2    #return sd1, sd2 and their ratio
