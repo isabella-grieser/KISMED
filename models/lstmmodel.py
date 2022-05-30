@@ -124,7 +124,7 @@ class LSTMModel(BaseModel):
 
     def preprocess(self, signals, labels, fs):
 
-        # signals = [invert2(s) for s in signals]
+        signals = [invert2(s) for s in signals]
         signals = [remove_noise_butterworth(s, fs) for s in signals]
         signals = [normalize_data(s) for s in signals]
         signals, labels = divide_all_signals_in_heartbeats(signals, labels, fs)
