@@ -1,6 +1,8 @@
 import numpy as np
 from ecgdetectors import Detectors
 from scipy import signal
+import math
+import neurokit2 as nk
 
 """
 use the functions in this file only after filtering the input signals
