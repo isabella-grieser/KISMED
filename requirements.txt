@@ -8,3 +8,4 @@ tensorflow_addons
 neurokit2
 scikit-learn
 mysql-connector-python
+ipykernel
