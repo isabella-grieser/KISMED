@@ -3,7 +3,7 @@ matplotlib
 numpy
 py-ecg-detectors
 pandas
-tensorflow == 2.8.0
+tensorflow
 tensorflow_addons
 neurokit2
 scikit-learn
