@@ -8,6 +8,7 @@ from preprocessing.padding import *
 from preprocessing.preprocessing import *
 from utils.utils import *
 from utils.plotutils import *
+from preprocessing.augmentation import *
 import pandas as pd  # TODO: can be later deleted
 
 from config import *
@@ -80,7 +81,7 @@ class CNNModel(BaseModel):
     def train(self, train_data, train_labels, val_data, val_labels, fs):
         # do the preprocessing
         plot_labels = train_labels
-        train_data, train_labels = self.over_sample(train_data, train_labels)  # unbalanced set -> oversampling...
+        train_data, train_labels = over_sample(train_data, train_labels)  # unbalanced set -> oversampling...
         train_data, train_labels = self.preprocess(train_data, train_labels, fs)
         val_data, val_labels = self.preprocess(val_data, val_labels, fs)
 
@@ -165,22 +166,3 @@ class CNNModel(BaseModel):
         labels = np.array(labels_to_encodings(labels)).reshape(signal_len, )
 
         return data_pad, labels
-
-    def over_sample(self, train_data, train_labels):
-        # could be transferred into preprocessing lib...
-        
-        ids = np.where(np.array(train_labels)=='A')[0]
-        choices = np.random.choice(ids, len(np.where(np.array(train_labels)=='N')[0]))
-
-        data_A_oversampled = np.array(train_data, dtype=object)[choices]
-        labels_A_oversampled = np.array(train_labels)[choices]
-
-        data_oversampled = np.concatenate([data_A_oversampled, np.array(train_data, dtype=object)[np.where(np.array(train_labels)=='N')[0]]], axis=0)
-        labels_oversampled = np.concatenate([labels_A_oversampled, np.array(train_labels)[np.where(np.array(train_labels)=='N')[0]]], axis=0)
-
-        order = np.arange(len(data_oversampled))
-        np.random.shuffle(order)
-        data_oversampled = data_oversampled[order]
-        labels_oversampled = labels_oversampled[order]
-
-        return (data_oversampled.tolist(), labels_oversampled.tolist())

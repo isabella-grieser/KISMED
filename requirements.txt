@@ -9,3 +9,4 @@ neurokit2
 scikit-learn
 mysql-connector-python
 ipykernel
+imbalanced-learn

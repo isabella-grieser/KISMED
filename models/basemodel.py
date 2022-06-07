@@ -60,6 +60,3 @@ class BaseModel:
         score: list
         """
         pass
-
-    def preprocess(self, data, labels, fs):
-        pass

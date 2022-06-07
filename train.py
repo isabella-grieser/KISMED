@@ -12,9 +12,9 @@ if __name__ == '__main__':
 
     train_data, train_labels, val_data, val_labels, test_data, test_labels = preprocess(ecg_leads, ecg_labels)
 
-    #model = LSTMModel(DATA_SIZE)
+    # model = LSTMModel(DATA_SIZE)
     total_size = int(fs * BF_PEAK_LEN*10**(-3)) + int(fs * AFT_PEAK_LEN*10**(-3))
-    model = LSTMModel(total_size)
+    model = LSTMModel(total_size, TYPE)
     model.train(train_data, train_labels, val_data, val_labels, fs)
 
     #TODO: model testing

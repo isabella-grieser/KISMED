@@ -10,6 +10,8 @@ def preprocess(data, labels):
     if TYPE == ProblemType.BINARY:
         data = [d for d, l in zip(data, labels) if l == "N" or l == "A"]
         labels = [l for l in labels if l == "N" or l == "A"]
+    else:
+        pass
 
     data_train, data_rest, y_train, y_rest = train_test_split(data, labels,
                                                               train_size=TRAIN_SPLIT,

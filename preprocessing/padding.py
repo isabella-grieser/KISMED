@@ -3,8 +3,6 @@ from config import *
 from ecgdetectors import Detectors
 import neurokit2 as nk
 
-minsize = 100
-
 
 def zero_padding(signal, size, end_padding=False):
     padded_signal = np.array(signal)
@@ -26,7 +24,7 @@ def prev_val_padding(signal, size, end_padding=False):
     return padded_signal
 
 
-def divide_signal(signal, label, size):
+def divide_signal(signal, label, size, minsize = 100):
     signals = []
     if len(signal) > size:
         signals.append(signal[:size])
@@ -37,7 +35,7 @@ def divide_signal(signal, label, size):
     elif len(signal) < minsize:
         pass  # do nothing
     else:
-        signals.append(zero_padding(signal, size))
+        signals.append(prev_val_padding(signal, size))
     labels = [label for s in range(len(signals))]
     return signals, labels
 
@@ -51,6 +49,14 @@ def divide_all_signals(signals, labels, size):
         labls.extend(la)
     return sigs, labls
 
+def divide_all_signals_with_lower_limit(signals, labels, size, lowerlimit):
+    sigs = []
+    labls = []
+    for s, l in zip(signals, labels):
+        sis, la = divide_signal(s, l, size, lowerlimit)
+        sigs.extend(sis)
+        labls.extend(la)
+    return sigs, labls
 
 def divide_heartbeats(signal, fs):
     _, rpeaks = nk.ecg_peaks(signal, sampling_rate=fs)
