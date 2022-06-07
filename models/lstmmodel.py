@@ -19,16 +19,16 @@ deep learning model based on Automated Atrial Fibrillation Detection using a Hyb
 
 class LSTMModel(BaseModel):
 
-    def __init__(self, input_size, type):
+    def __init__(self, input_size, typ=ProblemType.BINARY):
 
         super(BaseModel, self).__init__()
 
-        self.model_path = f"model_weights/lstm/{'binary' if TYPE == ProblemType.BINARY else 'multiclass'}/model-{MODEL_VERSION} "
-        self.num_classes = 2 if TYPE == ProblemType.BINARY else 4
+        self.model_path = f"model_weights/lstm/{'binary' if typ == ProblemType.BINARY else 'multiclass'}/model-{MODEL_VERSION}"
+        self.num_classes = 2 if typ == ProblemType.BINARY else 4
         # model definition
         self.model = keras.Sequential()
         self.model.add(keras.Input(shape=(input_size, 1)))
-        if type == ProblemType.FOUR_CLASS:
+        if typ == ProblemType.FOUR_CLASS:
             self.model.add(
                 keras.layers.Conv1D(input_size, kernel_size=6, strides=4, activation='relu'))  # convolution layer 1
         else:
@@ -37,7 +37,7 @@ class LSTMModel(BaseModel):
         self.model.add(keras.layers.BatchNormalization())
         self.model.add(keras.layers.MaxPooling1D(pool_size=2))
 
-        if type == ProblemType.FOUR_CLASS:
+        if typ == ProblemType.FOUR_CLASS:
             self.model.add(
                 keras.layers.Conv1D(input_size // 1.5, kernel_size=6, strides=4, activation='relu'))  # convolution layer 2
         else:
@@ -46,7 +46,7 @@ class LSTMModel(BaseModel):
         self.model.add(keras.layers.BatchNormalization())
         self.model.add(keras.layers.MaxPooling1D(pool_size=2))
 
-        if type == ProblemType.FOUR_CLASS:
+        if typ == ProblemType.FOUR_CLASS:
             self.model.add(
                 keras.layers.Conv1D(input_size // 2, kernel_size=6, strides=4, activation='relu'))  # convolution layer 3
         else:
@@ -60,18 +60,18 @@ class LSTMModel(BaseModel):
         self.model.add(keras.layers.Flatten())
         self.model.add(keras.layers.Dense(256, activation='relu'))  # dense layer
         self.model.add(keras.layers.Dropout(0.2))
-        if TYPE == ProblemType.BINARY:
+        if typ == ProblemType.BINARY:
             self.model.add(keras.layers.Dense(2))
         else:
             self.model.add(keras.layers.Dense(4))
         self.model.add(keras.layers.Softmax())
         self.model.summary()
 
-    def train(self, train_data, train_labels, val_data, val_labels, fs):
+    def train(self, train_data, train_labels, val_data, val_labels, fs, typ=ProblemType.BINARY):
         # do the preprocessing
         plot_labels = train_labels
-        train_data, train_labels = self.preprocess(train_data, train_labels, fs, train=True)
-        val_data, val_labels = self.preprocess(val_data, val_labels, fs, train=False)
+        train_data, train_labels = self.preprocess(train_data, train_labels, fs, train=True, typ=typ)
+        val_data, val_labels = self.preprocess(val_data, val_labels, fs, train=False, typ=typ)
 
         plot_all_signals(train_data, plot_labels, title='train signals')
 
@@ -96,7 +96,7 @@ class LSTMModel(BaseModel):
             keras.metrics.Precision(),
             keras.metrics.Recall()
         ]
-        if TYPE == ProblemType.BINARY:
+        if typ == ProblemType.BINARY:
             metrics.append(keras.metrics.BinaryAccuracy())
         else:
             metrics.append(keras.metrics.Accuracy())
@@ -116,12 +116,12 @@ class LSTMModel(BaseModel):
                        callbacks=callbacks
                        )
 
-    def test(self, test_data, test_labels, fs):
+    def test(self, test_data, test_labels, fs, typ=ProblemType.BINARY):
 
-        y_pred = labels_to_encodings(self.predict(test_data, fs))
+        y_pred = labels_to_encodings(self.predict(test_data, fs, typ))
         y_true = labels_to_encodings(test_labels)
 
-        average = "binary" if TYPE == ProblemType.BINARY else "weighted"
+        average = "binary" if typ == ProblemType.BINARY else "weighted"
         metrics = {
             "f1": f1_score(y_true=y_true, y_pred=y_pred, average=average),
             "accuracy": accuracy_score(y_true=y_true, y_pred=y_pred),
@@ -130,11 +130,11 @@ class LSTMModel(BaseModel):
         }
         return metrics
 
-    def predict(self, test_data, fs, type=ProblemType.BINARY):
+    def predict(self, test_data, fs, typ=ProblemType.BINARY):
         self.model.load_weights(self.model_path)
         y_pred = []
         for t in test_data:
-            data, _ = self.preprocess([t], ["N"], fs, train=False, type=type)
+            data, _ = self.preprocess([t], ["N"], fs, train=False, type=typ)
             y = np.argmax(self.model.predict(data, verbose=0), axis=1)
             # majority voting
             values, counts = np.unique(y, return_counts=True)
@@ -143,12 +143,12 @@ class LSTMModel(BaseModel):
 
         return encodings_to_labels(y_pred)
 
-    def preprocess(self, signals, labels, fs, train=True, type=ProblemType.BINARY):
+    def preprocess(self, signals, labels, fs, train=True, typ=ProblemType.BINARY):
 
         signals = [invert2(s) for s in signals]
         signals = [remove_noise_butterworth(s, fs) for s in signals]
         signals = [normalize_data(s) for s in signals]
-        if type == ProblemType.BINARY:
+        if typ == ProblemType.BINARY:
             signals, labels = divide_all_signals_in_heartbeats(signals, labels, fs)
         else:
             signals, labels = divide_all_signals_with_lower_limit(signals, labels, DATA_SIZE, LOWER_DATA_SIZE_LIMIT)

@@ -8,7 +8,7 @@ class BaseModel:
     def __init__(self):
         pass
 
-    def train(self, train_data, train_labels, val_data, val_labels, fs):
+    def train(self, train_data, train_labels, val_data, val_labels, fs, typ):
         """
         Train the model with the given data
         Parameters
@@ -26,7 +26,7 @@ class BaseModel:
         """
         pass
 
-    def test(self, test_data, test_labels, fs):
+    def test(self, test_data, test_labels, fs, typ):
         """
         Test the model with the given data
 
@@ -45,7 +45,7 @@ class BaseModel:
         """
         pass
 
-    def predict(self, test_data, fs):
+    def predict(self, test_data, fs, typ):
         """
         Test the model with the given data
 
