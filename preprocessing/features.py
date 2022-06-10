@@ -82,9 +82,9 @@ def dominant_freq(sig):
     max_x = f[Pxx_den.argmax()]  # Find the x value corresponding to the maximum y value
     return max_x  #returns dominant frequency in Hertz
 
-def beats_per_sec(sig, rpeaks):
+def beats_per_sec(sig, num_rpeaks):
     duration_sec = len(sig)*(1/300)  #Duration of signal in seconds
-    beats = len(r_peaks)
-    beats_per_sec = beats/ duration_sec
+    #beats = len(r_peaks)
+    beats_per_sec = num_rpeaks/ duration_sec
     return beats_per_sec   #Generally Normal Beats_per_sec: 1 to 1.67, (Not always followed)
 
