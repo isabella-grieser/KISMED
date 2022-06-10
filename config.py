@@ -9,7 +9,7 @@ TRAIN_SPLIT = .8
 VAL_SPLIT = .1
 TEST_SPLIT = .1
 
-DATA_SIZE = 4500
+DATA_SIZE = 3000
 LOWER_DATA_SIZE_LIMIT = 1000
 
 SEED = 17
@@ -18,9 +18,9 @@ SEED = 17
 #model params
 EPOCHS = 100
 LEARNING_RATE = 1e-5
-TRAIN_BATCH = 32
+TRAIN_BATCH = 16
 TEST_BATCH = 32
-TYPE = ProblemType.BINARY
+TYPE = ProblemType.FOUR_CLASS
 MODEL_VERSION = "v6"
 
 #heartbeat params (given a sampling frequency in Hz)

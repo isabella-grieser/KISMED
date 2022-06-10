@@ -13,7 +13,7 @@ class ClassifierModel(BaseModel):
         models:   all models considered for the classifier; the models should already be trained
         """
         self.models = models
-        self.model_path = f"model_weights/classifier/{'binary' if typ == ProblemType.BINARY else 'multiclass'}/model-{MODEL_VERSION}"
+        self.model_path = f"model_weights/classifier/{'binary' if typ == ProblemType.BINARY else 'multiclass'}/model-{MODEL_VERSION}.hdf5"
 
 
 
@@ -46,8 +46,6 @@ class ClassifierModel(BaseModel):
         }
         return metrics
 
-
-
     def predict(self, test_data, fs, typ=ProblemType.BINARY):
 
         y_pred = self.__calculate_input(test_data)
@@ -56,9 +54,6 @@ class ClassifierModel(BaseModel):
             classifier = pickle.load(f)
 
         return classifier.predict(y_pred)
-
-
-
 
     def __calculate_input(self, data):
         y_pred = []

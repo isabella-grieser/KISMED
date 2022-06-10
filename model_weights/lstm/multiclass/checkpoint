@@ -1,0 +1,2 @@
+model_checkpoint_path: "model-v6.hdf5"
+all_model_checkpoint_paths: "model-v6.hdf5"
