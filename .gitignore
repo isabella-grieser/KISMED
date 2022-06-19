@@ -144,5 +144,5 @@ PREDICTIONS.csv
 data/others/CINC/fs_300/
 data/others/CPSC/fs_500/
 data/others/CPSC/fs_300/
-data/others/CU_SPH/
-#data/others/CPSC/
+data/others/CU_SPH/fs_500/
+data/others/CU_SPH/fs_300/
