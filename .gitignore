@@ -139,3 +139,8 @@ PREDICTIONS.csv
 
 # VS Code Data
 .vscode/
+
+# Data folders
+data/others/CINC/
+data/others/CU_SPH/
+data/others/CPSC/
