@@ -141,6 +141,6 @@ PREDICTIONS.csv
 .vscode/
 
 # Data folders
-data/others/CINC/
+data/others/CINC/fs_300/
 data/others/CU_SPH/
 data/others/CPSC/
