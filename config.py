@@ -5,12 +5,12 @@ class ProblemType(Enum):
     BINARY = 2
 
 #data params
-TRAIN_SPLIT = .8
-VAL_SPLIT = .1
-TEST_SPLIT = .1
+TRAIN_SPLIT = .9
+VAL_SPLIT = .05
+TEST_SPLIT = .05
 
-DATA_SIZE = 3000
-LOWER_DATA_SIZE_LIMIT = 1000
+DATA_SIZE = 9000
+LOWER_DATA_SIZE_LIMIT = 500
 
 SEED = 17
 
@@ -21,7 +21,7 @@ LEARNING_RATE = 1e-5
 TRAIN_BATCH = 16
 TEST_BATCH = 32
 TYPE = ProblemType.FOUR_CLASS
-MODEL_VERSION = "v6"
+MODEL_VERSION = "v1"
 
 #heartbeat params (given a sampling frequency in Hz)
 #in ms
