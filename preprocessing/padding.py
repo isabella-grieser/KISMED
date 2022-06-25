@@ -24,7 +24,7 @@ def prev_val_padding(signal, size, end_padding=False):
     return padded_signal
 
 
-def divide_signal(signal, label, size, minsize = 100):
+def divide_signal(signal, label, size, minsize=100):
     signals = []
     if len(signal) > size:
         signals.append(signal[:size])
@@ -86,8 +86,8 @@ def divide_heartbeats(signal, fs):
         heartbeats.append(signal[start:end])
 
     # additional padding may be necessary
-    beats = [prev_val_padding(h, start_size + end_size) for h in heartbeats[0:-1]]
-    beats.append(prev_val_padding(heartbeats[-1], start_size + end_size, end_padding=True))
+    beats = [zero_padding(h, start_size + end_size) for h in heartbeats[0:-1]]
+    beats.append(zero_padding(heartbeats[-1], start_size + end_size))
 
     return beats
 

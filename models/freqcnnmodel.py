@@ -2,6 +2,7 @@ import numpy as np
 
 from models.basemodel import BaseModel
 from tensorflow import keras
+import tensorflow as tf
 import tensorflow_addons as tfa
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from preprocessing.padding import *
@@ -9,75 +10,57 @@ from preprocessing.preprocessing import *
 from utils.utils import *
 from utils.plotutils import *
 from preprocessing.augmentation import *
+from scipy import signal
 
 from config import *
 
 """
-deep learning model based on Automated Atrial Fibrillation Detection using a Hybrid CNN-biLSTM Network
-
-DEPRECEATED; left in repository for documentation purposes
+deep learning model based on ....
 """
 
+CONV_BLOCK_AMOUNT = 7
+FILTER_SIZE = 64
+GROWTH = 32
+class FreqCNNModel(BaseModel):
 
-class LSTMModel(BaseModel):
-
-    def __init__(self, fs, typ=ProblemType.BINARY):
+    def __init__(self, fs, dims, typ=ProblemType.BINARY):
 
         super(BaseModel, self).__init__()
 
-        self.model_path = f"model_weights/lstm/{'binary' if typ == ProblemType.BINARY else 'multiclass'}/model-{MODEL_VERSION}.hdf5"
+        self.model_path = f"model_weights/freqcnn/{'binary' if typ == ProblemType.BINARY else 'multiclass'}/model-{MODEL_VERSION}.hdf5"
         self.num_classes = 2 if typ == ProblemType.BINARY else 4
         self.typ = typ
-        input = int(fs * BF_PEAK_LEN*10**(-3)) + int(fs * AFT_PEAK_LEN*10**(-3)) if typ == ProblemType.BINARY else DATA_SIZE
+        self.dims = dims
         # model definition
-        self.model = keras.Sequential()
-        self.model.add(keras.Input(shape=(input, 1)))
-        if typ == ProblemType.FOUR_CLASS:
-            self.model.add(
-                keras.layers.Conv1D(input, kernel_size=6, strides=4, activation='relu'))  # convolution layer 1
-        else:
-            self.model.add(
-                keras.layers.Conv1D(input, kernel_size=3, strides=2, activation='relu'))  # convolution layer 1
-        self.model.add(keras.layers.BatchNormalization())
-        self.model.add(keras.layers.MaxPooling1D(pool_size=2))
 
-        if typ == ProblemType.FOUR_CLASS:
-            self.model.add(
-                keras.layers.Conv1D(input // 1.5, kernel_size=6, strides=4, activation='relu'))  # convolution layer 2
-        else:
-            self.model.add(
-                keras.layers.Conv1D(input // 1.5, kernel_size=3, strides=2, activation='relu'))  # convolution layer 2
-        self.model.add(keras.layers.BatchNormalization())
-        self.model.add(keras.layers.MaxPooling1D(pool_size=2))
+        input_layer = keras.Input(shape=(dims[0], dims[1], 1))
+        prev_layer = input_layer
+        for i in range(CONV_BLOCK_AMOUNT):
 
-        if typ == ProblemType.FOUR_CLASS:
-            self.model.add(
-                keras.layers.Conv1D(input // 2, kernel_size=6, strides=4, activation='relu'))  # convolution layer 3
-        else:
-            self.model.add(
-                keras.layers.Conv1D(input // 2, kernel_size=3, strides=2, activation='relu'))  # convolution layer 3
-        self.model.add(keras.layers.BatchNormalization())
-        self.model.add(keras.layers.MaxPooling1D(pool_size=2))
+            conv = keras.layers.Conv2D(filters=FILTER_SIZE + (i+1)*GROWTH, strides=(1, 1), kernel_size=(5, 5), padding='same')(prev_layer)
+            batch = keras.layers.BatchNormalization()(conv)
+            relu = keras.layers.ReLU()(batch)
+            pool = keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='same')(relu)
+            prev_layer = keras.layers.Dropout(0.1)(pool)
 
-        self.model.add(
-            keras.layers.Bidirectional(keras.layers.LSTM(128, return_sequences=True, dropout=0.2)))  # LSTM layer
-        self.model.add(keras.layers.Flatten())
-        self.model.add(keras.layers.Dense(256, activation='relu'))  # dense layer
-        self.model.add(keras.layers.Dropout(0.2))
+        # TODO: temporal average while considering zero padded data
+        average = keras.layers.GlobalAveragePooling2D()(prev_layer)
+        dense = None
         if typ == ProblemType.BINARY:
-            self.model.add(keras.layers.Dense(2))
+            dense = keras.layers.Dense(2)(average)
         else:
-            self.model.add(keras.layers.Dense(4))
-        self.model.add(keras.layers.Softmax())
+            dense = keras.layers.Dense(4)(average)
+
+        output_layer = keras.layers.Softmax()(dense)
+
+        self.model = keras.models.Model(inputs=input_layer, outputs=output_layer)
         self.model.summary()
 
-    def train(self, train_data, train_labels, val_data, val_labels, fs):
+    def train(self, train_data, train_labels, val_data, val_labels, fs, typ, version=""):
         # do the preprocessing
         plot_labels = train_labels
         train_data, train_labels = self.preprocess(train_data, train_labels, fs, train=True)
         val_data, val_labels = self.preprocess(val_data, val_labels, fs, train=False)
-
-        plot_all_signals(train_data, plot_labels, title='train signals')
 
         # callbacks
         callbacks = [
@@ -87,7 +70,7 @@ class LSTMModel(BaseModel):
                 save_best_only=True,
             ),
             keras.callbacks.EarlyStopping(
-                monitor="val_recall",
+                monitor="val_precision"+version,
                 mode='max',
                 min_delta=0,
                 patience=15,
@@ -149,21 +132,25 @@ class LSTMModel(BaseModel):
 
     def preprocess(self, signals, labels, fs, train=True):
 
-        if self.typ == ProblemType.BINARY:
-            signals = [invert2(s) for s in signals]
-            signals = [remove_noise_butterworth(s, fs) for s in signals]
-            signals = [normalize_data(s) for s in signals]
-            signals, labels = divide_all_signals_in_heartbeats(signals, labels, fs)
-        else:
-            signals = [remove_noise_butterworth(s, fs) for s in signals]
-            signals = [normalize_data(s) for s in signals]
-            signals, labels = divide_all_signals_with_lower_limit(signals, labels, DATA_SIZE, LOWER_DATA_SIZE_LIMIT)
+        signals = [remove_noise_butterworth(s, fs) for s in signals]
+        signals, labels = divide_all_signals_with_lower_limit(signals, labels, DATA_SIZE, LOWER_DATA_SIZE_LIMIT)
 
-        signals = np.stack(signals, axis=0)
-        signal_len = len(signals)
-        data_len = len(signals[0])
-        signals = signals.reshape(signal_len, data_len)
         if train:
             signals, labels = smote_augmentation(signals, labels)
+
+        # work with log spectogram
+        spectograms = []
+        for s in signals:
+            _, _, spectogram = signal.spectrogram(s, fs=fs, nperseg=64, noverlap=32)
+            spectogram = abs(spectogram)
+            spectogram[spectogram > 0] = np.log(spectogram[spectogram > 0])
+            spectogram = spectogram.reshape(-1, self.dims[0], self.dims[1], 1)
+            spectograms.append(spectogram)
         labels = keras.utils.to_categorical(labels_to_encodings(labels), num_classes=self.num_classes)
-        return signals, labels
+
+        spectograms = np.array(spectograms).reshape(-1, self.dims[0], self.dims[1], 1)
+        return spectograms, labels
+
+    def temporal_average(self, input, length):
+        output = tf.reduce_sum(input, axis=1)
+        divisor = tf.expand_dims(tf.cast)

@@ -6,23 +6,30 @@ import neurokit2 as nk
 from config import *
 
 
-def preprocess(data, labels):
+def preprocess(data, labels, val_data=True):
     if TYPE == ProblemType.BINARY:
         data = [d for d, l in zip(data, labels) if l == "N" or l == "A"]
         labels = [l for l in labels if l == "N" or l == "A"]
     else:
         pass
-
-    data_train, data_rest, y_train, y_rest = train_test_split(data, labels,
-                                                              train_size=TRAIN_SPLIT,
-                                                              stratify=labels,
+    if val_data:
+        data_train, data_rest, y_train, y_rest = train_test_split(data, labels,
+                                                                  train_size=TRAIN_SPLIT,
+                                                                  stratify=labels,
+                                                                  random_state=SEED,
+                                                                  shuffle=True)
+        data_val, data_test, y_val, y_test = train_test_split(data_rest, y_rest,
+                                                              train_size=VAL_SPLIT / TRAIN_SPLIT,
+                                                              stratify=y_rest,
                                                               random_state=SEED,
                                                               shuffle=True)
-    data_val, data_test, y_val, y_test = train_test_split(data_rest, y_rest,
-                                                          train_size=VAL_SPLIT / TRAIN_SPLIT,
-                                                          stratify=y_rest,
-                                                          random_state=SEED,
-                                                          shuffle=True)
+    else:
+        data_train, data_test, y_train, y_test = train_test_split(data, labels,
+                                                                  train_size=TRAIN_SPLIT,
+                                                                  stratify=labels,
+                                                                  random_state=SEED,
+                                                                  shuffle=True)
+        data_val, y_val = [], []
     return data_train, y_train, data_val, y_val, data_test, y_test
 
 
@@ -66,3 +73,4 @@ def invert2(signal):
         out = signal
 
     return out
+
