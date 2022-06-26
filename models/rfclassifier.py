@@ -11,7 +11,6 @@ from sklearn import preprocessing
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from scipy import signal, stats
-import math
 import pickle
 #from wettbewerb import load_references
 from preprocessing.preprocessing import *
