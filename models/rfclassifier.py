@@ -2,7 +2,7 @@
 from models.basemodel import BaseModel
 import numpy as np
 from scipy.signal import find_peaks
-import seaborn as sns
+#import seaborn as sns
 import math
 import neurokit2 as nk
 import scipy.io
