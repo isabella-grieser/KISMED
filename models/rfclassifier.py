@@ -47,14 +47,13 @@ class RfClassifier(BaseModel):
 
     def test(self, test_data, test_labels, fs, typ):
         pred = self.predict(test_data, fs=fs)  # declare scaler
-
         average = "binary"
 
         metrics = {
-            "f1": f1_score(y_true=test_labels, y_pred=pred, average=average),
+            "f1": f1_score(y_true=test_labels, y_pred=pred, average=average, pos_label='A'),
             "accuracy": accuracy_score(y_true=test_labels, y_pred=pred),
-            "precision": precision_score(y_true=test_labels, y_pred=pred, average=average),
-            "recall": recall_score(y_true=test_labels, y_pred=pred, average=average)
+            "precision": precision_score(y_true=test_labels, y_pred=pred, average=average, pos_label='A'),
+            "recall": recall_score(y_true=test_labels, y_pred=pred, average=average, pos_label='A')
         }
         return metrics
 
