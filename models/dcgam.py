@@ -2,6 +2,8 @@ from tensorflow import keras
 
 """
 generative adversial network for data augmentation purposes
+
+DEPRECEATED: not worked upon further
 """
 
 class DCGAN(keras.Model):
