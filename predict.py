@@ -12,8 +12,10 @@ import scipy.io as sio
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import List, Tuple
-from models.lstmmodel import LSTMModel
+from models.freqcnnmodel import FreqCNNModel
 from config import *
+from scipy import signal
+from preprocessing.padding import divide_signal
 from utils.utils import *
 
 ###Signatur der Methode (Parameter und Anzahl return-Werte) darf nicht verändert werden
@@ -43,10 +45,17 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
 #------------------------------------------------------------------------------
 # Euer Code ab hier
 
-    total_size = int(fs * BF_PEAK_LEN*10**(-3)) + int(fs * AFT_PEAK_LEN*10**(-3))
-    model = LSTMModel(total_size)
 
-    y_pred = model.predict(ecg_leads, fs)
+    if is_binary_classifier:
+        signals, labels = divide_signal(ecg_leads[0], ["N"], DATA_SIZE, LOWER_DATA_SIZE_LIMIT)
+        _, _, sprectogram = signal.spectrogram(signals[0], fs=fs, nperseg=64, noverlap=32)
+        model = FreqCNNModel(fs, sprectogram.shape, ProblemType.BINARY)
+        y_pred = model.predict(ecg_leads, fs)
+    else:
+        signals, labels = divide_signal(ecg_leads[0], ["N"], DATA_SIZE, LOWER_DATA_SIZE_LIMIT)
+        _, _, sprectogram = signal.spectrogram(signals[0], fs=fs, nperseg=64, noverlap=32)
+        model = FreqCNNModel(fs, sprectogram.shape, ProblemType.FOUR_CLASS)
+        y_pred = model.predict(ecg_leads, fs)
 
     predictions = list(zip(ecg_names, y_pred))
 #------------------------------------------------------------------------------    

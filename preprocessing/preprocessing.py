@@ -6,8 +6,8 @@ import neurokit2 as nk
 from config import *
 
 
-def preprocess(data, labels, val_data=True):
-    if TYPE == ProblemType.BINARY:
+def preprocess(data, labels, typ=ProblemType.BINARY, val_data=True):
+    if typ == ProblemType.BINARY:
         data = [d for d, l in zip(data, labels) if l == "N" or l == "A"]
         labels = [l for l in labels if l == "N" or l == "A"]
     else:

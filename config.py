@@ -12,7 +12,7 @@ TEST_SPLIT = .05
 DATA_SIZE = 9000
 LOWER_DATA_SIZE_LIMIT = 500
 
-SEED = 17
+SEED = 24
 
 
 #model params
