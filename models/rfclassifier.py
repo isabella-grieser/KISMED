@@ -16,7 +16,10 @@ from preprocessing.preprocessing import *
 from preprocessing.padding import *
 from preprocessing.features import *
 from utils.utils import *
+import warnings
 
+warnings.filterwarnings("ignore", message="invalid value encountered in double_scalars")
+warnings.filterwarnings("ignore", message="Mean of empty slice.")
 
 class RfClassifier(BaseModel):
 
@@ -32,8 +35,10 @@ class RfClassifier(BaseModel):
     def train(self, train_data, train_labels, val_data, val_labels, fs, typ):
         train_data, train_labels = self.preprocess(train_data, train_labels, fs)
         val_data, val_labels = self.preprocess(val_data, val_labels, fs)
+
         train_data = self.scaler.fit_transform(train_data)
         self.model.fit(train_data, train_labels)
+
         with open(self.model_path, 'wb') as f:
             pickle.dump(self.model, f)
 
