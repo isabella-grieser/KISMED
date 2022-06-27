@@ -49,7 +49,7 @@ def rri_std(signals, fs):
 def extract_r_p_peaks(sig, fs):
     _, rpeaks = nk.ecg_peaks(sig, sampling_rate=fs)
     rpeaks['ECG_R_Peaks'] = rpeaks['ECG_R_Peaks'][0:-1]  #Avoid indexing overflow error, Need to find robust method later
-    _, waves_peak = nk.ecg_delineate(sig, rpeaks, sampling_rate=fs, method="cwt")
+    _, waves_peak = nk.ecg_delineate(sig, rpeaks, sampling_rate=fs, method="dwt")
     r_peaks = rpeaks['ECG_R_Peaks']
     p_peaks = waves_peak['ECG_P_Peaks']
     #print(len(p_peaks))
