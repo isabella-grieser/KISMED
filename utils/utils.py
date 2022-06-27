@@ -3,13 +3,18 @@ from wettbewerb import load_references
 label_mapping = {'N': 0, 'A': 1, 'O': 2, '~': 3}
 reverse_map = dict((v, k) for k, v in label_mapping.items())
 
-
-def calc_data_amount(labels):
-    # data has 4 labels: N, O, ~, A
+def data_amount(labels):
     o = sum(1 for l in labels if l == 'O')
     a = sum(1 for l in labels if l == 'A')
     n = sum(1 for l in labels if l == 'N')
     char = sum(1 for l in labels if l == '~')
+    return o, a, n, char
+
+
+
+def calc_data_amount(labels):
+    # data has 4 labels: N, O, ~, A
+    o, a, n, char = data_amount(labels)
 
     print(f'total data amount: {len(labels)}')
     print(f'all label types: {set(labels)}')

@@ -150,7 +150,3 @@ class FreqCNNModel(BaseModel):
 
         spectograms = np.array(spectograms).reshape(-1, self.dims[0], self.dims[1], 1)
         return spectograms, labels
-
-    def temporal_average(self, input, length):
-        output = tf.reduce_sum(input, axis=1)
-        divisor = tf.expand_dims(tf.cast)

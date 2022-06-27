@@ -35,7 +35,7 @@ def divide_signal(signal, label, size, minsize=100):
     elif len(signal) < minsize:
         pass  # do nothing
     else:
-        signals.append(prev_val_padding(signal, size))
+        signals.append(zero_padding(signal, size))
     labels = [label for s in range(len(signals))]
     return signals, labels
 
