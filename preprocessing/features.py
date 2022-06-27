@@ -69,13 +69,15 @@ def poincare_sd(r_peaks):   #input argument r_peaks in samples only
 
 def stats_features(points):
     points = np.array(points)
-    mean = points.mean()
-    std = points.std()
-    q2 = np.quantile(points, 0.5)
-    q1 = np.quantile(points, 0.25)
-    q3 = np.quantile(points, 0.75)
-    iqr = q3 - q1
-    quartile_coeff_disp = (q3 - q1)/ (q3 + q1)
+    mean, std, q2, iqr, quartile_coeff_disp = 0, 0, 0, 0, 0
+    if len(points) != 0: 
+        mean = points.mean()
+        std = points.std()
+        q2 = np.quantile(points, 0.5)
+        q1 = np.quantile(points, 0.25)
+        q3 = np.quantile(points, 0.75)
+        iqr = q3 - q1
+        quartile_coeff_disp = (q3 - q1)/ (q3 + q1)
     
     return mean, std, q2, iqr, quartile_coeff_disp
 
