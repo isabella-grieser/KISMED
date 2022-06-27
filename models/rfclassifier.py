@@ -31,9 +31,8 @@ class rfclassifier(BaseModel):
         self.typ = typ
         
         self.scaler = preprocessing.MinMaxScaler()
-        self.model = RandomForestClassifier(n_estimators = 700, max_depth = 50, random_state=0)
-        
-    
+        self.model = RandomForestClassifier(n_estimators=700, max_depth=50, random_state=SEED)
+
     def train(self, train_data, train_labels, val_data, val_labels, fs, typ):
         train_data, train_labels = self.preprocess(train_data, train_labels, fs)
         val_data, val_labels = self.preprocess(val_data, val_labels, fs)
