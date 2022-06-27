@@ -1,7 +1,6 @@
 from models.basemodel import BaseModel
 import numpy as np
 from scipy.signal import find_peaks
-#import seaborn as sns
 import math
 import neurokit2 as nk
 import scipy.io
@@ -11,7 +10,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from scipy import signal, stats
 import pickle
-# from wettbewerb import load_references
 from preprocessing.preprocessing import *
 from preprocessing.padding import *
 from preprocessing.features import *
@@ -20,6 +18,9 @@ import warnings
 
 warnings.filterwarnings("ignore", message="invalid value encountered in double_scalars")
 warnings.filterwarnings("ignore", message="Mean of empty slice.")
+warnings.filterwarnings("ignore", message="Degrees of freedom <= 0 for slice")
+warnings.filterwarnings("ignore", message="invalid value encountered in true_divide")
+
 
 class RfClassifier(BaseModel):
 
