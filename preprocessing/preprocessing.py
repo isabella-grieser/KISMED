@@ -56,24 +56,29 @@ def normalize_data2(data):
 
 
 def invert2(signal):
+    inv_signal = 0 - signal
+    
     try:
         _, rpeaks = nk.ecg_peaks(signal, sampling_rate=300)
         orig_sinal_peaks = signal[rpeaks['ECG_R_Peaks']]  # R-peaks of original signal
+        orig_peaks_mean = orig_sinal_peaks.mean()
 
-        inv_signal = 0 - signal
+    except:
+        return inv_signal
+
+    try:
         _, rpeaks = nk.ecg_peaks(inv_signal, sampling_rate=300)
         inv_sinal_peaks = inv_signal[rpeaks['ECG_R_Peaks']]  # R-peaks of inverted signal
-
-        # mean of R-peaks
-        orig_peaks_mean = orig_sinal_peaks.mean()
         inv_peaks_mean = inv_sinal_peaks.mean()
-
-        if orig_peaks_mean < inv_peaks_mean:
-            out = inv_signal
-        else:
-            out = signal
-
-        return out
-    except IndexError:
+        
+    except:
         return signal
+    
+    if orig_peaks_mean < inv_peaks_mean:
+        out = inv_signal
+    else:
+        out = signal
+
+    return out
+
 
