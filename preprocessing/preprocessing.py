@@ -63,7 +63,7 @@ def invert2(signal):
         orig_sinal_peaks = signal[rpeaks['ECG_R_Peaks']]  # R-peaks of original signal
         orig_peaks_mean = orig_sinal_peaks.mean()
 
-    except:
+    except Exception:
         return inv_signal
 
     try:
@@ -71,7 +71,7 @@ def invert2(signal):
         inv_sinal_peaks = inv_signal[rpeaks['ECG_R_Peaks']]  # R-peaks of inverted signal
         inv_peaks_mean = inv_sinal_peaks.mean()
         
-    except:
+    except Exception:
         return signal
     
     if orig_peaks_mean < inv_peaks_mean:
