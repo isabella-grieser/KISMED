@@ -103,6 +103,10 @@ class RfClassifier(BaseModel):
             X.append(array)
             y.append(labels[i])
 
+        X[X < 1e308] = 0
+        X[X > 1e308] = 0
+        X[np.isnan(X)] = 0
+        
         data, labels = np.array(X), np.array(y)
 
         return data, labels
