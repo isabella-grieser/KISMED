@@ -1,3 +1,4 @@
+
 from models.basemodel import BaseModel
 import numpy as np
 from scipy.signal import find_peaks
@@ -7,7 +8,7 @@ import scipy.io
 import sklearn
 import eli5 as eli
 from sklearn import preprocessing
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from scipy import signal, stats
 import pickle
@@ -16,6 +17,9 @@ from preprocessing.padding import *
 from preprocessing.features import *
 from utils.utils import *
 import warnings
+import xgboost as xgb
+import pickle
+
 
 warnings.filterwarnings("ignore", message="invalid value encountered in double_scalars")
 warnings.filterwarnings("ignore", message="Mean of empty slice.")
@@ -23,24 +27,30 @@ warnings.filterwarnings("ignore", message="Degrees of freedom <= 0 for slice")
 warnings.filterwarnings("ignore", message="invalid value encountered in true_divide")
 
 
-class RfClassifier(BaseModel):
+class xgboostmodel(BaseModel):
 
     def __init__(self):
         super(BaseModel, self).__init__()
 
-        self.model_path = "model_weights/randomforest/rf_model.pkl"
-        self.scaler_path = "model_weights/randomforest/scaler.pkl"
-
+        self.model_path = "model_weights/xgboost/xgb2.pkl"
+        self.scaler_path = "model_weights/xgboost/scaler5.pkl"
+        self.encoder_path = "model_weights/xgboost/encoder2.pkl" 
         self.scaler = preprocessing.MinMaxScaler()
-        self.model = RandomForestClassifier(n_estimators=700, max_depth=50, random_state=SEED)
 
 
     def train(self, train_data, train_labels, val_data, val_labels, fs, typ):
         train_data, train_labels = self.preprocess(train_data, train_labels, fs)
         val_data, val_labels = self.preprocess(val_data, val_labels, fs)
-
+        
+        encoder = pickle.load(open(self.encoder_path, 'rb'))
+        label_encoded_y = encoder.transform(train_labels)
+        
+        best_learning_rate = self.optimal_lr(train_data, label_encoded_y)
+                
         train_data = self.scaler.fit_transform(train_data)
-        self.model.fit(train_data, train_labels)
+        model = xgb.XGBClassifier(objective="binary:logistic", learning_rate = best_learning_rate,
+                                                   max_depth=10, n_estimators=100 ,random_state=SEED)
+        model.fit(X, label_encoded_y)
 
         with open(self.model_path, 'wb') as f:
             pickle.dump(self.model, f)
@@ -67,6 +77,8 @@ class RfClassifier(BaseModel):
         sig, label = self.preprocess(data, dummy_labels, fs)
         data = scaler.transform(sig)
         pred = model.predict(data)
+        encoder = pickle.load(open(self.encoder_path, 'rb'))
+        pred = encoder.inverse_transform(pred)
 
         return pred
 
@@ -109,6 +121,24 @@ class RfClassifier(BaseModel):
         
         return data, labels
 
-    def explain_model(self):
-        model = pickle.load(open(self.model_path, 'rb'))  # load saved model
-        print(eli.explain_weights(model))
+    
+# TO DO: Explainable AI for xgboost    
+#     def explain_model(self):
+#         model = pickle.load(open(self.model_path, 'rb'))  # load saved model
+#         print(eli.explain_weights(model))
+        
+    def optimal_lr(self, X, y): 
+        model = XGBClassifier(max_depth=10, n_estimators=100)
+        learning_rate = [0.01, 0.1, 0.2, 0.3]
+        learning_rate = [0.2, 0.3]
+        param_grid = dict(learning_rate=learning_rate)
+
+        kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+
+        grid_search = GridSearchCV(model, param_grid, scoring="neg_log_loss", n_jobs=-1, cv=kfold)
+        grid_result = grid_search.fit(X, y)
+
+        best_lr = grid_result.best_params_
+
+        return best_lr['learning_rate']
+
