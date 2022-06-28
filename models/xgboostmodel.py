@@ -130,7 +130,6 @@ class xgboostmodel(BaseModel):
     def optimal_lr(self, X, y): 
         model = XGBClassifier(max_depth=10, n_estimators=100)
         learning_rate = [0.01, 0.1, 0.2, 0.3]
-        learning_rate = [0.2, 0.3]
         param_grid = dict(learning_rate=learning_rate)
 
         kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
