@@ -12,3 +12,4 @@ ipykernel
 imbalanced-learn
 cleanlab
 seaborn
+eli5

@@ -150,3 +150,13 @@ class FreqCNNModel(BaseModel):
 
         spectograms = np.array(spectograms).reshape(-1, self.dims[0], self.dims[1], 1)
         return spectograms, labels
+
+    def is_noise(self, signals):
+        """
+        SIDEQUEST 2: find the noisy/noise signals
+
+        returns a true/false list
+        """
+        y_pred = self.predict(signals, fs=300)
+        return [y == '~' for y in y_pred]
+

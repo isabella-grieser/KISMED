@@ -5,6 +5,7 @@ import math
 import neurokit2 as nk
 import scipy.io
 import sklearn
+import eli5 as eli
 from sklearn import preprocessing
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
@@ -105,3 +106,7 @@ class RfClassifier(BaseModel):
         data, labels = np.array(X), np.array(y)
 
         return data, labels
+
+    def explain_model(self):
+        model = pickle.load(open(self.model_path, 'rb'))  # load saved model
+        print(eli.explain_weights(model))

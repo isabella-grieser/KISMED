@@ -27,8 +27,7 @@ if __name__ == '__main__':
     _, _, sprectogram = signal.spectrogram(signals[0], fs=fs, nperseg=64, noverlap=32)
     model = FreqCNNModel(fs, sprectogram.shape, TYPE)
     if CROSSVAL:
-        pass
-        # model = crossvalidation(model, fs, train_data, train_labels, typ=TYPE, path="model_weights/freqcnn/crossval/")
+        model = crossvalidation(model, fs, train_data, train_labels, typ=TYPE, path="model_weights/freqcnn/crossval/")
     else:
         model.train(train_data, train_labels, val_data, val_labels, fs)
 
