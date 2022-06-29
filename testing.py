@@ -17,8 +17,7 @@ if __name__ == '__main__':
     #signals = [d for d, l in zip(signals, labels) if l == "N" or l == "A"]
     #labels = [l for l in labels if l == "N" or l == "A"]
     # signals, labels = signals[:70], labels[:70]
-
-    bad_signals, bad_labels = return_mislabeled_data(signals, labels, fs=300, typ=ProblemType.FOUR_CLASS, model="freqcnn")
+    bad_signals, bad_labels = return_mislabeled_data(signals, labels, fs=300)
 
     plot_all_signals(bad_signals, bad_labels, title='wrongly labeled signals')
 

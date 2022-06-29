@@ -1,3 +1,5 @@
+from sklearn.model_selection import GridSearchCV
+
 from models.basemodel import BaseModel
 import numpy as np
 from scipy.signal import find_peaks
@@ -33,6 +35,10 @@ class RfClassifier(BaseModel):
 
         self.scaler = preprocessing.MinMaxScaler()
         self.model = RandomForestClassifier(n_estimators=700, max_depth=50, random_state=SEED)
+
+        self.feature_names = [
+            ""
+        ]
 
 
     def train(self, train_data, train_labels, val_data, val_labels, fs, typ):
@@ -109,6 +115,21 @@ class RfClassifier(BaseModel):
         
         return data, labels
 
+    def crossval(self, data, labels, fs, param_grid):
+
+        grid_search = GridSearchCV(self.model, param_grid, cv=10, verbose=2, n_jobs=-1)
+
+        ecg_leads, ecg_labels = self.preprocess(data, labels, fs)
+        grid_search.fit(ecg_leads, ecg_labels)
+        print(grid_search.best_estimator_)
+
     def explain_model(self):
         model = pickle.load(open(self.model_path, 'rb'))  # load saved model
         print(eli.explain_weights(model))
+
+    def explain_prediction(self, signal):
+        """
+        explains the prediction for a single signal
+        """
+        model = pickle.load(open(self.model_path, 'rb'))  # load saved model
+        print(eli.explain_prediction(model, signal))

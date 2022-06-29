@@ -14,6 +14,7 @@ def crossvalidation(model, fs, data, labels, times=10, typ=ProblemType.BINARY, p
         data = np.array(data)
     if type(labels) == list:
         labels = np.array(labels)
+
     kfold = StratifiedKFold(n_splits=times, shuffle=True, random_state=SEED)
     index = 0
     f1_score = []
