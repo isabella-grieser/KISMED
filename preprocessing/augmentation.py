@@ -7,6 +7,9 @@ import random
 
 
 def smote_augmentation(signals, labels):
+    """
+    do smote augmentation to deal with data imbalance
+    """
     # for the augmentation, it is necessary for all values that are fitted to have the same length
     oversample = SMOTE(random_state=SEED)
     data = np.array(signals)
@@ -35,7 +38,9 @@ def over_sample(train_data, train_labels):
     return (data_oversampled.tolist(), labels_oversampled.tolist())
 
 def add_noise_samples(data, labels, fs=300, duration=30):
-    """add noise data without other augmentation methods to improve "noisiness" of the noise data"""
+    """
+    add noise data without other augmentation methods to improve "noisiness" of the noise data
+    """
     amounts = data_amount(labels)
 
     max_amount = max(amounts)

@@ -42,5 +42,7 @@ def crossvalidation(model, fs, data, labels, times=10, typ=ProblemType.BINARY, p
     print(f1_score)
     argmax = np.argmax(np.array(f1_score))
     print(f"best model: {argmax}")
+
     model.model_path = f"{path}{'binary' if typ == ProblemType.BINARY else 'multiclass'}/model-{MODEL_VERSION}-crossval{argmax}.hdf5"
+    model.model.load_weights(model.model_path)
     return model

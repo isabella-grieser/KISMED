@@ -17,6 +17,8 @@ import time  # for logger csv (SP)
 """
 deep learning model based on Assessment of Potential Primary and Recurrent Ischemic Stroke by Detecting Atrial Fibrillation using
 1D-CNN and CHA2DS2-VA Score by Mohammad Mahbubur Rahman Khan Mamun
+
+DEPRECEATED; left in repository for documentation purposes
 """
 
 # Some constants

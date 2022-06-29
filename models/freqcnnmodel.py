@@ -58,7 +58,6 @@ class FreqCNNModel(BaseModel):
 
     def train(self, train_data, train_labels, val_data, val_labels, fs, typ, version=""):
         # do the preprocessing
-        plot_labels = train_labels
         train_data, train_labels = self.preprocess(train_data, train_labels, fs, train=True)
         val_data, val_labels = self.preprocess(val_data, val_labels, fs, train=False)
 

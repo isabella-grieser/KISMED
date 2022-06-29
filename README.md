@@ -1,25 +1,51 @@
-# 18-ha-2010-pj
+# Repository der Gruppe "Beats by Dr.DeepAI"
 Code zum Projektseminar "Wettbewerb künstliche Intelligenz in der Medizin" 
-SoSe 2022 von der Gruppe "Beats by Dr.DeepAI".
-## Erste Schritte
+SoSe 2022 von der Gruppe "Beats by Dr.DeepAI". 
+Mitglieder der Gruppe waren Abhishek Deshmukh, Sebastian Perle und Isabella Nunes Grieser.
 
-1. Klone/Forke dieses Repository
-2. Richte ein eigenes Repository auf github/gitlab ein. Darüber könnt ihr später die Abgaben eurer Modelle machen.
-3. Python Environment anlegen (z.B. mit Anaconda), dann kann "requirements.txt" mit `pip install -r requirements.txt` ausgeführt werden und installiert die notwendigen Pakete 
+Für das Projektseminar wurden zwei Modelle erstellt. Das erste Modell ist ein RandomForestClassifier, welches mit
+Features, die von dem Signal extrahiert werden, prognostiziert, ob ein Signal zu der Klasse "Atrial Fibrillation" ist
+oder von einem normalen Herzen gemessen wurde.
+Das zweite Modell ist ein Convolutional Neural Network, welches ein Spektogramm vom Modell als Eingabe erhält und
+anschließend entscheidet, ob das Signal des Typs "Normal Heartbeat", "Atrial Fibrillation", "Other Signal Type" 
+oder "Noise" ist.
 
-## Wichtig!
 
-Bitte achtet bei der Abgabe darauf, dass alle von uns gestellten Dateien auf dem Top-Level des Repositories liegen. Testet die Funktionsfähigkeit eures Codes mit dem Skript predict_pretrained.py. 
 
-Die Dateien 
-- predict_pretrained.py
-- wettbewerb.py
-- score.py
+## Projektstruktur
 
-werden von uns beim testen auf den ursprünglichen Stand zurückgesetzt. Es ist deshalb nicht empfehlenswert diese zu verändern. In predict.py ist für die Funktion `predict_labels` das Interface festgelegt, das wir für die Evaluierung verwenden.
+Das Projekt ist in mehrere Ordner unterteilt. Die wichtigsten Ordner werden im folgenden genannt:
 
-`predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[str], model_name : str='model.npy',is_binary_classifier : bool=False) -> List[Tuple[str,str]]`
+#### data
+Der Datenordner. Dieser ist in mehreren Unterordnern unterteilt:
+- **training**: Hier liegen die uns ursprünglich gegebenen Daten.
+- **others**: Hier liegen die von uns gefundenen Daten:
+    - **CINC**: Hier liegen die Daten von ...
+    - **CPSC**: Hier liegen die Daten von ...
+    - **CU_SPH**: Hier liegen die Daten von ...
 
-Insbesondere den `model_name` könnt ihr verwenden um bei der Abgabe verschiedene Modelle zu kennzeichnen, welche zum Beispiel durch eure Ordnerstruktur dargestellt werden. Der Parameter `is_binary_classifier` ermöglicht es zu entscheiden, ob mit dem Modell nur die zwei Hauptlabels "Atrial Fibrillation ['A']" und "Normal ['N']" klassfiziert werden (binärer Klassifikator), oder alle vier Label.
+#### model_weights
+Hier sind alle trainierten Modelle gespeichert, die von uns erstellt wurden. Jedes Modell hat 
+seinen eigenen Unterordner.
 
-Bitte gebt alle verwendeten packages in "requirements.txt" bei der Abgabe zur Evaluation an und testet dies vorher in einer frischen Umgebung mit `pip install -r requirements.txt`. Als Basis habt ihr immer die vorgegebene "requirements.txt"-Datei. Wir selbst verwenden Python 3.8. Wenn es ein Paket gibt, welches nur unter einer anderen Version funktioniert ist das auch in Ordung. In dem Fall bitte Python-Version mit angeben.
+#### models
+Hier sind die Implementierungen aller Modelle, die von uns getestet wurden. Modelle, die bei der finalen Abgabe nicht 
+berücksichtigt wurden, wurden mit *DEPRECEATED* angegeben
+
+#### Notebooks
+Mehrere Notebooks, die von uns in dem Modellbildungsprozess erstellt wurden.
+
+#### preprocessing
+Erhält alle Preprocessing-Methoden. Wichtige Dateien sind:
+- **augmentation.py**: Erhält alle Augmentierungsmethoden, die von uns benutzt wurden. 
+- **features.py**: Erhält alle Methoden zur Feature-Extrahierung.
+- **padding.py**: Erhält alle Methoden, die für die Normalisierung der Signale auf dieselbe Länge benutzt wurden.
+- **preprocessing.py**: Erhält alle sonstigen Methoden, die für das Preprocessing benutzt wurden.
+
+#### Sonstige Dateien
+
+Weitere wichtige Dateien sind:
+
+- **config.py**: Erhält alle Konfigurationsparameter für das Trainieren/die Benutzung des FreqCNNModels.
+- **noisesidequest.py**: Skript für die Analyse der Rauschen-Nebenaufgabe.
+- **train.py**: Skript für das Trainieren der beiden finalen Modelle.

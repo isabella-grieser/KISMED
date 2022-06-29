@@ -4,10 +4,10 @@ from models.basemodel import BaseModel
 import numpy as np
 from scipy.signal import find_peaks
 import math
+import shap
 import neurokit2 as nk
 import scipy.io
 import sklearn
-import eli5 as eli
 from sklearn import preprocessing
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
@@ -32,10 +32,12 @@ class RfClassifier(BaseModel):
 
         self.model_path = "model_weights/randomforest/rf_model.pkl"
         self.scaler_path = "model_weights/randomforest/scaler.pkl"
+        self.explainer_path = "model_weights/randomforest/explainer.pkl"
 
         self.scaler = preprocessing.MinMaxScaler()
-        self.model = RandomForestClassifier(n_estimators=700, max_depth=50, random_state=SEED)
+        self.model = RandomForestClassifier(n_estimators=500, max_depth=30, random_state=SEED)
 
+        self.explainer = None
         self.feature_names = ['Number of p peaks missed', 'score1', 'score2', 'score3', 'sd1', 'sd2', 'ratio', 'beat_rate', 'dominant_freq',
                               'energy_percent_at_dominant_freq', 'mean1', 'std1', 'q2_1', 'iqr1', 'quartile_coeff_disp1', 'mean2', 'std2',
                               'q2_2', 'iqr2', 'quartile_coeff_disp2', 'mean3', 'std3', 'q2_3', 'iqr3', 'quartile_coeff_disp3']
@@ -66,20 +68,23 @@ class RfClassifier(BaseModel):
                                     'iqr3': 'Inter quartile range of P peaks amplitude',
                                     'quartile_coeff_disp3': 'Quartile cofficient dispersion of P peaks amplitude'
             }
-
         
     def train(self, train_data, train_labels, val_data, val_labels, fs, typ):
         train_data, train_labels = self.preprocess(train_data, train_labels, fs)
-        val_data, val_labels = self.preprocess(val_data, val_labels, fs)
 
         train_data = self.scaler.fit_transform(train_data)
         self.model.fit(train_data, train_labels)
+
+        self.explainer = shap.TreeExplainer(self.model)
 
         with open(self.model_path, 'wb') as f:
             pickle.dump(self.model, f)
 
         with open(self.scaler_path, 'wb') as f:
             pickle.dump(self.scaler, f)
+
+        with open(self.explainer_path, 'wb') as f:
+            pickle.dump(self.explainer, f)
 
     def test(self, test_data, test_labels, fs, typ):
         pred = self.predict(test_data, fs=fs)  # declare scaler
@@ -95,9 +100,12 @@ class RfClassifier(BaseModel):
 
     def predict(self, data, fs):
         dummy_labels = np.zeros(len(data))
+
         self.model = pickle.load(open(self.model_path, 'rb'))  # load saved model
         self.scaler = pickle.load(open(self.scaler_path, 'rb'))
+
         sig, label = self.preprocess(data, dummy_labels, fs)
+
         data = self.scaler.transform(sig)
         pred = self.model.predict(data)
 
@@ -106,6 +114,7 @@ class RfClassifier(BaseModel):
     def preprocess(self, signals, labels, fs=300):
         X, y = [], []
         for i in range(len(signals)):
+            # description of the features: see the feature description dictionary
             signal = invert2(signals[i])
             signal = nk.ecg_clean(signal, sampling_rate=fs, method="neurokit")
             # sig = remove_noise_butterworth(sig, 300)
@@ -143,26 +152,27 @@ class RfClassifier(BaseModel):
         return data, labels
 
     def crossval(self, data, labels, fs, param_grid):
-
-        grid_search = GridSearchCV(self.model, param_grid, cv=10, verbose=2, n_jobs=6)
+        """
+        Do crossvalidation for hyperparameter optimization
+        """
 
         ecg_leads, ecg_labels = self.preprocess(data, labels, fs)
+
+        grid_search = GridSearchCV(self.model, param_grid, cv=10, verbose=2, n_jobs=6)
         grid_search.fit(ecg_leads, ecg_labels)
+
         print(grid_search.best_estimator_)
 
-    def explain_model(self):
-        self.model = pickle.load(open(self.model_path, 'rb'))  # load saved model
-
-        return eli.explain_weights(self.model, feature_names=self.feature_names)
-
-    def explain_prediction(self, signal, show_feature_amount=5):
+    def explain_prediction(self, signal, fs=300, show_feature_amount=5):
         """
         explains the prediction for a single signal
         """
-        self.model = pickle.load(open(self.model_path, 'rb')) 
-        self.scaler = pickle.load(open(self.scaler_path, 'rb'))
+        y_pred = self.predict([signal], fs)
+        
+        explainer_model = pickle.load(open(self.explainer_path, 'rb'))  # load saved model
 
+        print(f'label: {y_pred}')
         feature_vec, _ = self.preprocess([signal], ["N"])
         feature_vec = feature_vec[0]
 
-        print(eli.explain_prediction_df(self.model, feature_vec, top_targets=show_feature_amount, feature_names=self.feature_names))
+        return explainer_model.shap_values(feature_vec)

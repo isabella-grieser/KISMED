@@ -12,5 +12,5 @@ ipykernel
 imbalanced-learn
 cleanlab
 seaborn
-eli5
 xgboost
+shap

@@ -24,6 +24,7 @@ def preprocess(data, labels, typ=ProblemType.BINARY, val_data=True):
                                                               random_state=SEED,
                                                               shuffle=True)
     else:
+        # validation data is not necessary, only train and test data
         data_train, data_test, y_train, y_test = train_test_split(data, labels,
                                                                   train_size=TRAIN_SPLIT,
                                                                   stratify=labels,

@@ -13,6 +13,8 @@ def return_mislabeled_data(data, labels, fs=300, typ=ProblemType.BINARY):
     try to find mislabeled data
 
     only used for "N" and "A" signals since they are the most important signals
+
+    Was not used since it could not be finished on time
     """
     data = np.array([d for d, l in zip(data, labels) if l == "N" or l == "A"])
     labels = np.array([l for l in labels if l == "N" or l == "A"])
