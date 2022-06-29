@@ -40,7 +40,24 @@ class RfClassifier(BaseModel):
                               'energy_percent_at_dominant_freq', 'mean1', 'std1', 'q2_1', 'iqr1', 'quartile_coeff_disp1', 'mean2', 'std2',
                               'q2_2', 'iqr2', 'quartile_coeff_disp2', 'mean3', 'std3', 'q2_3','iqr3', 'quartile_coeff_disp3']
 
+        self.feature_description = {'Number of p peaks missed': 'Number of detected R peaks - Number of deteced P peaks', 
+                                    'score1': 'Indicates proporion of R-R distances lies inside threshold (Range: 0 to 1, generally more value indicates N)',
+                                    'score2': 'Indicates proporion of R-R distances lies inside threshold (Range: 0 to 1, generally more value indicates N)',
+                                    'score3': 'Indicates proporion of R-R distances lies inside threshold (Range: 0 to 1, generally more value indicates N)',
+                                    'sd1': 'short-term Heart rate variability' , 'sd2': 'long-term Heart rate variability', 'ratio': 'unpredictability of the RR' ,
+                                    'beat_rate': 'Beats frequency based on R peaks', 'dominant_freq': 'None', 'energy_percent_at_dominant_freq': 'None', 'mean1': 'Mean of R-R distances',
+                                    'std1': 'Standard deviation of R-R distances', 'q2_1': 'Second quarter of R-R distances',
+                                    'iqr1': 'Inter quartile range of of R-R distances', 'quartile_coeff_disp1': 'Quartile cofficient dispersion of R-R distances',
+                                    'mean2': 'Mean of R peaks amplitude', 'std2': 'Standard deviation of R peaks amplitude',
+                                 'q2_2': 'Second quarter of R peaks amplitude', 'iqr2': 'Inter quartile range quarter of R peaks amplitude',
+                                    'quartile_coeff_disp2': 'Quartile cofficient dispersion of R peaks amplitude', 'mean3': 'Mean of P peaks amplitude',
+                                    'std3': 'Standard deviation of P peaks amplitude', 'q2_3': 'Second quartile of P peaks amplitude',
+                                    'iqr3': 'Inter quartile range of P peaks amplitude' , 'quartile_coeff_disp3': 'Quartile cofficient dispersion of P peaks amplitude'
 
+
+            }
+
+        
     def train(self, train_data, train_labels, val_data, val_labels, fs, typ):
         train_data, train_labels = self.preprocess(train_data, train_labels, fs)
         val_data, val_labels = self.preprocess(val_data, val_labels, fs)
