@@ -36,9 +36,9 @@ class RfClassifier(BaseModel):
         self.scaler = preprocessing.MinMaxScaler()
         self.model = RandomForestClassifier(n_estimators=700, max_depth=50, random_state=SEED)
 
-        self.feature_names = [
-            ""
-        ]
+        self.feature_names = ['Number of p peaks missed', 'score1', 'score2', 'score3', 'sd1', 'sd2', 'ratio', 'beat_rate', 'dominant_freq',
+                              'energy_percent_at_dominant_freq', 'mean1', 'std1', 'q2_1', 'iqr1', 'quartile_coeff_disp1', 'mean2', 'std2',
+                              'q2_2', 'iqr2', 'quartile_coeff_disp2', 'mean3', 'std3', 'q2_3','iqr3', 'quartile_coeff_disp3']
 
 
     def train(self, train_data, train_labels, val_data, val_labels, fs, typ):
