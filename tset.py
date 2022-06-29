@@ -26,11 +26,11 @@ print("now do crossvalidation")
 
 param_grid = [
     {
-        'n_estimators': [i for i in range(100, 600, 50)],
-        'max_depth': [i for i in range(10, 70, 10)],
-        'max_features': ['sqrt', 'log2', 2, 4, 8, None],
+        'n_estimators': [i for i in range(100, 600, 100)],
+        'max_depth': [i for i in range(10, 70, 20)],
+        'max_features': ['sqrt', 'log2', 4, 8, None],
         'min_samples_leaf': [1, 2, 4],
-        'min_samples_split': [2, 5, 10],
+        'min_samples_split': [5, 10],
         'random_state': [SEED]
     }
 ]

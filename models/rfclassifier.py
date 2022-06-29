@@ -38,23 +38,33 @@ class RfClassifier(BaseModel):
 
         self.feature_names = ['Number of p peaks missed', 'score1', 'score2', 'score3', 'sd1', 'sd2', 'ratio', 'beat_rate', 'dominant_freq',
                               'energy_percent_at_dominant_freq', 'mean1', 'std1', 'q2_1', 'iqr1', 'quartile_coeff_disp1', 'mean2', 'std2',
-                              'q2_2', 'iqr2', 'quartile_coeff_disp2', 'mean3', 'std3', 'q2_3','iqr3', 'quartile_coeff_disp3']
+                              'q2_2', 'iqr2', 'quartile_coeff_disp2', 'mean3', 'std3', 'q2_3', 'iqr3', 'quartile_coeff_disp3']
 
         self.feature_description = {'Number of p peaks missed': 'Number of detected R peaks - Number of deteced P peaks', 
                                     'score1': 'Indicates proporion of R-R distances lies inside threshold (Range: 0 to 1, generally more value indicates N)',
                                     'score2': 'Indicates proporion of R-R distances lies inside threshold (Range: 0 to 1, generally more value indicates N)',
                                     'score3': 'Indicates proporion of R-R distances lies inside threshold (Range: 0 to 1, generally more value indicates N)',
-                                    'sd1': 'short-term Heart rate variability' , 'sd2': 'long-term Heart rate variability', 'ratio': 'unpredictability of the RR' ,
-                                    'beat_rate': 'Beats frequency based on R peaks', 'dominant_freq': 'None', 'energy_percent_at_dominant_freq': 'None', 'mean1': 'Mean of R-R distances',
-                                    'std1': 'Standard deviation of R-R distances', 'q2_1': 'Second quarter of R-R distances',
-                                    'iqr1': 'Inter quartile range of of R-R distances', 'quartile_coeff_disp1': 'Quartile cofficient dispersion of R-R distances',
-                                    'mean2': 'Mean of R peaks amplitude', 'std2': 'Standard deviation of R peaks amplitude',
-                                 'q2_2': 'Second quarter of R peaks amplitude', 'iqr2': 'Inter quartile range quarter of R peaks amplitude',
-                                    'quartile_coeff_disp2': 'Quartile cofficient dispersion of R peaks amplitude', 'mean3': 'Mean of P peaks amplitude',
-                                    'std3': 'Standard deviation of P peaks amplitude', 'q2_3': 'Second quartile of P peaks amplitude',
-                                    'iqr3': 'Inter quartile range of P peaks amplitude' , 'quartile_coeff_disp3': 'Quartile cofficient dispersion of P peaks amplitude'
-
-
+                                    'sd1': 'short-term Heart rate variability',
+                                    'sd2': 'long-term Heart rate variability',
+                                    'ratio': 'unpredictability of the RR',
+                                    'beat_rate': 'Beats frequency based on R peaks',
+                                    'dominant_freq': 'dominant frequency',
+                                    'energy_percent_at_dominant_freq': 'TODO',
+                                    'mean1': 'Mean of R-R distances',
+                                    'std1': 'Standard deviation of R-R distances',
+                                    'q2_1': 'Second quarter of R-R distances',
+                                    'iqr1': 'Inter quartile range of of R-R distances',
+                                    'quartile_coeff_disp1': 'Quartile cofficient dispersion of R-R distances',
+                                    'mean2': 'Mean of R peaks amplitude',
+                                    'std2': 'Standard deviation of R peaks amplitude',
+                                    'q2_2': 'Second quarter of R peaks amplitude',
+                                    'iqr2': 'Inter quartile range quarter of R peaks amplitude',
+                                    'quartile_coeff_disp2': 'Quartile cofficient dispersion of R peaks amplitude',
+                                    'mean3': 'Mean of P peaks amplitude',
+                                    'std3': 'Standard deviation of P peaks amplitude',
+                                    'q2_3': 'Second quartile of P peaks amplitude',
+                                    'iqr3': 'Inter quartile range of P peaks amplitude',
+                                    'quartile_coeff_disp3': 'Quartile cofficient dispersion of P peaks amplitude'
             }
 
         
@@ -85,11 +95,11 @@ class RfClassifier(BaseModel):
 
     def predict(self, data, fs):
         dummy_labels = np.zeros(len(data))
-        model = pickle.load(open(self.model_path, 'rb'))  # load saved model
-        scaler = pickle.load(open(self.scaler_path, 'rb'))
+        self.model = pickle.load(open(self.model_path, 'rb'))  # load saved model
+        self.scaler = pickle.load(open(self.scaler_path, 'rb'))
         sig, label = self.preprocess(data, dummy_labels, fs)
-        data = scaler.transform(sig)
-        pred = model.predict(data)
+        data = self.scaler.transform(sig)
+        pred = self.model.predict(data)
 
         return pred
 
@@ -134,19 +144,25 @@ class RfClassifier(BaseModel):
 
     def crossval(self, data, labels, fs, param_grid):
 
-        grid_search = GridSearchCV(self.model, param_grid, cv=10, verbose=2, n_jobs=-1)
+        grid_search = GridSearchCV(self.model, param_grid, cv=10, verbose=2, n_jobs=6)
 
         ecg_leads, ecg_labels = self.preprocess(data, labels, fs)
         grid_search.fit(ecg_leads, ecg_labels)
         print(grid_search.best_estimator_)
 
     def explain_model(self):
-        model = pickle.load(open(self.model_path, 'rb'))  # load saved model
-        print(eli.explain_weights(model))
+        self.model = pickle.load(open(self.model_path, 'rb'))  # load saved model
 
-    def explain_prediction(self, signal):
+        return eli.explain_weights(self.model, feature_names=self.feature_names)
+
+    def explain_prediction(self, signal, show_feature_amount=5):
         """
         explains the prediction for a single signal
         """
-        model = pickle.load(open(self.model_path, 'rb'))  # load saved model
-        print(eli.explain_prediction(model, signal))
+        self.model = pickle.load(open(self.model_path, 'rb')) 
+        self.scaler = pickle.load(open(self.scaler_path, 'rb'))
+
+        feature_vec, _ = self.preprocess([signal], ["N"])
+        feature_vec = feature_vec[0]
+
+        print(eli.explain_prediction_df(self.model, feature_vec, top_targets=show_feature_amount, feature_names=self.feature_names))
