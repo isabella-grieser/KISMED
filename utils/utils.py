@@ -38,6 +38,12 @@ def get_all_data():
 
     return ecg_leads, ecg_labels, fs, ecg_names
 
+def load_test_references():
+    """test data which can be used when given data was used for testing"""
+    ecg_leads, ecg_labels, fs, ecg_names = load_references(folder="data/others/CINC/test")
+
+    return ecg_leads, ecg_labels, fs, ecg_names
+
 
 def labels_to_encodings(labels):
     return [label_mapping[l] for l in labels]

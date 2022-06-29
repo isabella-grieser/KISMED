@@ -146,6 +146,7 @@ data/others/CPSC/fs_500/
 data/others/CPSC/fs_300/
 data/others/CU_SPH/fs_500/
 data/others/CU_SPH/fs_300/
+data/others/CINC/test/
 
 # crossvalidation model files
 model_weights/freqcnn/crossval
