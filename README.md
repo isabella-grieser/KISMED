@@ -10,9 +10,11 @@ Das zweite Modell ist ein Convolutional Neural Network, welches ein Spektogramm 
 anschließend entscheidet, ob das Signal des Typs "Normal Heartbeat", "Atrial Fibrillation", "Other Signal Type" 
 oder "Noise" ist.
 
+#TODO: noch die Besonderheiten erklären
 
 
-## Projektstruktur
+
+### Projektstruktur
 
 Das Projekt ist in mehrere Ordner unterteilt. Die wichtigsten Ordner werden im folgenden genannt:
 

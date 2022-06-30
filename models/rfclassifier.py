@@ -35,7 +35,7 @@ class RfClassifier(BaseModel):
         self.explainer_path = "model_weights/randomforest/explainer.pkl"
 
         self.scaler = preprocessing.MinMaxScaler()
-        self.model = RandomForestClassifier(n_estimators=500, max_depth=30, random_state=SEED)
+        self.model = RandomForestClassifier(max_depth=30, min_samples_split=5, n_estimators=350, random_state=SEED)
 
         self.explainer = None
         self.feature_names = ['Number of p peaks missed', 'score1', 'score2', 'score3', 'sd1', 'sd2', 'ratio', 'beat_rate', 'dominant_freq',
