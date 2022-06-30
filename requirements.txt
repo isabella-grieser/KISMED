@@ -13,3 +13,4 @@ cleanlab
 seaborn
 xgboost
 shap
+py-ecg-detectors
