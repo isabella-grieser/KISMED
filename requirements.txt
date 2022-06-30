@@ -1,7 +1,6 @@
 scipy
 matplotlib
 numpy
-py-ecg-detectors
 pandas
 tensorflow
 tensorflow_addons
