@@ -37,7 +37,6 @@ def poincare_sd(r_peaks):  # input argument r_peaks in samples only
         rr_n1 = rr[1:]  # shifted rr duration
         sd1 = np.sqrt(0.5) * np.std(rr_n1 - rr_n)
         sd2 = np.sqrt(0.5) * np.std(rr_n1 + rr_n)
-        ratio = sd1 / sd2
         if sd2 != 0:
             ratio = sd1 / sd2
         else:
