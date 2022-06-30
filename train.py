@@ -66,7 +66,7 @@ def train_rf_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, to_eval
             rfmodel.train(train_data, train_labels, val_data, val_labels, fs, typ=ProblemType.BINARY)
 
     if to_evaluate:
-        evaluate(rfmodel, test_data, test_labels, is_binary=True)
+        evaluate(rfmodel, test_data, test_labels, is_binary=False)
 
 
 def evaluate(model, test_data, test_labels, is_binary=True):
@@ -74,15 +74,18 @@ def evaluate(model, test_data, test_labels, is_binary=True):
     start_time = time.time()
 
     if is_binary:
-        y_pred = model.predict(test_data, fs)
+        data = [d for d, l in zip(test_data, test_labels) if l == "N" or l == "A"]
+        labels = [l for l in test_labels if l == "N" or l == "A"]
+
+        y_pred = model.predict(data, fs)
 
         y_pred = [1 if y == "N" else 0 for y in y_pred]
-        test_data = [1 if y == "N" else 0 for y in test_labels]
+        test_data = [1 if y == "N" else 0 for y in labels]
 
         print(sklearn.metrics.classification_report(test_data, y_pred))
-
-    y_pred = model.test(test_data, test_labels, fs, typ=ProblemType.FOUR_CLASS)
-    print(y_pred)
+    else:
+        y_pred = model.test(test_data, test_labels, fs)
+        print(y_pred)
 
     pred_time = time.time() - start_time
     print(f'time needed for prediction calculation: {pred_time}')
@@ -96,6 +99,16 @@ if __name__ == '__main__':
     # add additional noise samples
     ecg_leads, ecg_labels = add_noise_samples(ecg_leads, ecg_labels, fs=300, duration=30)
 
-    # train_freq_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, evaluate=True)
-    train_rf_model(ecg_leads, ecg_labels, fs, crossval=False, train=False, to_evaluate=True)
+    # train_freq_model(ecg_leads, ecg_labels, fs, crossval=True, train=False, to_evaluate=True)
+    # train_rf_model(ecg_leads, ecg_labels, fs, crossval=False, train=False, to_evaluate=True)
 
+    test_data, test_labels, _, _ = load_test_references()
+
+    signals, labels = divide_signal(test_data[0], test_labels[0], DATA_SIZE, LOWER_DATA_SIZE_LIMIT)
+    _, _, sprectogram = signal.spectrogram(signals[0], fs=fs, nperseg=64, noverlap=32)
+
+    freqmodel = FreqCNNModel(fs, sprectogram.shape, TYPE)
+    rfmodel = RfClassifier()
+
+    evaluate(rfmodel, test_data, test_labels, is_binary=True)
+    evaluate(freqmodel, test_data, test_labels, is_binary=False)

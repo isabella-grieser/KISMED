@@ -5,6 +5,7 @@ import numpy as np
 from scipy.signal import find_peaks
 import math
 import shap
+import pandas as pd
 import neurokit2 as nk
 import scipy.io
 import sklearn
@@ -86,7 +87,7 @@ class RfClassifier(BaseModel):
         with open(self.explainer_path, 'wb') as f:
             pickle.dump(self.explainer, f)
 
-    def test(self, test_data, test_labels, fs, typ):
+    def test(self, test_data, test_labels, fs):
         pred = self.predict(test_data, fs=fs)  # declare scaler
         average = "binary"
 
@@ -169,10 +170,12 @@ class RfClassifier(BaseModel):
         """
         y_pred = self.predict([signal], fs)
         
-        explainer_model = pickle.load(open(self.explainer_path, 'rb'))  # load saved model
+        self.explainer = pickle.load(open(self.explainer_path, 'rb'))  # load saved model
 
         print(f'label: {y_pred}')
         feature_vec, _ = self.preprocess([signal], ["N"])
+
+        df = pd.DataFrame(feature_vec, columns=self.feature_names)
         feature_vec = feature_vec[0]
 
-        return explainer_model.shap_values(feature_vec)
+        return self.explainer.shap_values(feature_vec)

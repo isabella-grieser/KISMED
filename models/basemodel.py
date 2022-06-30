@@ -26,7 +26,7 @@ class BaseModel:
         """
         pass
 
-    def test(self, test_data, test_labels, fs, typ):
+    def test(self, test_data, test_labels, fs):
         """
         Test the model with the given data
 
