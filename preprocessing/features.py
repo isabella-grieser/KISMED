@@ -13,17 +13,18 @@ use the functions in this file only after filtering the input signals
 def extract_r_p_peaks(sig, fs):
     try:
         _, rpeaks = nk.ecg_peaks(sig, sampling_rate=fs)
-        rpeaks['ECG_R_Peaks'] = rpeaks['ECG_R_Peaks'][
+        
+        if len(rpeaks['ECG_R_Peaks']) > 4:
+            rpeaks['ECG_R_Peaks'] = rpeaks['ECG_R_Peaks'][
                                     0:-1]  # Avoid indexing overflow error, Need to find robust method later
-        r_peaks = rpeaks['ECG_R_Peaks']
-        if len(r_peaks) > 3:
             _, waves_peak = nk.ecg_delineate(sig, rpeaks, sampling_rate=fs, method="cwt")
+            r_peaks = rpeaks['ECG_R_Peaks']
             p_peaks = waves_peak['ECG_P_Peaks']
             if len(p_peaks) != 0:
                 p_peaks = [x for x in p_peaks if math.isnan(x) is False]  
             return r_peaks, p_peaks  # return sample points of R and P peaks
         else:
-            return r_peaks, []   
+            return [], []   
     except:
         return [], []
 
