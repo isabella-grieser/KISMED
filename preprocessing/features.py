@@ -10,21 +10,24 @@ from preprocessing.padding import divide_heartbeats
 use the functions in this file only after filtering the input signals
 """
 
-
 def extract_r_p_peaks(sig, fs):
     try:
         _, rpeaks = nk.ecg_peaks(sig, sampling_rate=fs)
-        rpeaks['ECG_R_Peaks'] = rpeaks['ECG_R_Peaks'][
-                                0:-1]  # Avoid indexing overflow error, Need to find robust method later
-        _, waves_peak = nk.ecg_delineate(sig, rpeaks, sampling_rate=fs, method="cwt")
-        r_peaks = rpeaks['ECG_R_Peaks']
-        p_peaks = waves_peak['ECG_P_Peaks']
-        # print(len(p_peaks))
-        if len(p_peaks) != 0:
-            p_peaks = [x for x in p_peaks if math.isnan(x) is False]
-        return r_peaks, p_peaks  # return sample points of R and P peaks
+        
+        if len(rpeaks['ECG_R_Peaks']) > 4:
+            rpeaks['ECG_R_Peaks'] = rpeaks['ECG_R_Peaks'][
+                                    0:-1]  # Avoid indexing overflow error, Need to find robust method later
+            _, waves_peak = nk.ecg_delineate(sig, rpeaks, sampling_rate=fs, method="cwt")
+            r_peaks = rpeaks['ECG_R_Peaks']
+            p_peaks = waves_peak['ECG_P_Peaks']
+            if len(p_peaks) != 0:
+                p_peaks = [x for x in p_peaks if math.isnan(x) is False]  
+            return r_peaks, p_peaks  # return sample points of R and P peaks
+        else:
+            return [], []   
     except:
         return [], []
+
 
 
 def poincare_sd(r_peaks):  # input argument r_peaks in samples only
@@ -35,7 +38,10 @@ def poincare_sd(r_peaks):  # input argument r_peaks in samples only
         rr_n1 = rr[1:]  # shifted rr duration
         sd1 = np.sqrt(0.5) * np.std(rr_n1 - rr_n)
         sd2 = np.sqrt(0.5) * np.std(rr_n1 + rr_n)
-        ratio = sd1 / sd2
+        if sd2 != 0:
+            ratio = sd1 / sd2
+        else:
+            ratio = 1    
     except Exception:
         sd1, sd2, ratio = 0, 0, 1
     return sd1, sd2, ratio  # return sd1, sd2 and their ratio
