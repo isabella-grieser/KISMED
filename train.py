@@ -13,7 +13,7 @@ import time
 from config import *
 
 
-def train_freq_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, evaluate=True):
+def train_freq_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, to_evaluate=True):
     # train the FreqCNNModel
     if crossval:
         train_data, train_labels, val_data, val_labels, test_data, test_labels = preprocess(ecg_leads, ecg_labels,
@@ -36,11 +36,12 @@ def train_freq_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, evalu
         else:
             freqmodel.train(train_data, train_labels, val_data, val_labels, fs)
 
-    if evaluate:
-        evaluate(freqmodel, test_data, test_labels, binary=TYPE == ProblemType.BINARY)
+    if to_evaluate:
+        is_binary = TYPE == ProblemType
+        evaluate(freqmodel, test_data, test_labels, is_binary=is_binary)
 
 
-def train_rf_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, evaluate=True):
+def train_rf_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, to_evaluate=True):
     # train the Random Forest Classifier
     rfmodel = RfClassifier()
 
@@ -64,24 +65,24 @@ def train_rf_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, evaluat
         else:
             rfmodel.train(train_data, train_labels, val_data, val_labels, fs, typ=ProblemType.BINARY)
 
-    if evaluate:
-        evaluate(rfmodel, test_data, test_labels, binary=True)
+    if to_evaluate:
+        evaluate(rfmodel, test_data, test_labels, is_binary=True)
 
 
-def evaluate(model, test_data, test_labels, binary=True):
+def evaluate(model, test_data, test_labels, is_binary=True):
 
     start_time = time.time()
 
-    if binary:
+    if is_binary:
         y_pred = model.predict(test_data, fs)
 
         y_pred = [1 if y == "N" else 0 for y in y_pred]
         test_data = [1 if y == "N" else 0 for y in test_labels]
 
         print(sklearn.metrics.classification_report(test_data, y_pred))
-    else:
-        y_pred = model.test(test_data, test_labels, fs, typ=ProblemType.FOUR_CLASS)
-        print(y_pred)
+
+    y_pred = model.test(test_data, test_labels, fs, typ=ProblemType.FOUR_CLASS)
+    print(y_pred)
 
     pred_time = time.time() - start_time
     print(f'time needed for prediction calculation: {pred_time}')
@@ -95,6 +96,6 @@ if __name__ == '__main__':
     # add additional noise samples
     ecg_leads, ecg_labels = add_noise_samples(ecg_leads, ecg_labels, fs=300, duration=30)
 
-    train_freq_model(ecg_leads, ecg_labels, fs, crossval=True, train=False, evaluate=True)
-    train_rf_model(ecg_leads, ecg_labels, fs, crossval=False, train=False, evaluate=True)
+    # train_freq_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, evaluate=True)
+    train_rf_model(ecg_leads, ecg_labels, fs, crossval=False, train=False, to_evaluate=True)
 
