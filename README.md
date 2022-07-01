@@ -44,6 +44,11 @@ Erhält alle Preprocessing-Methoden. Wichtige Dateien sind:
 - **padding.py**: Erhält alle Methoden, die für die Normalisierung der Signale auf dieselbe Länge benutzt wurden.
 - **preprocessing.py**: Erhält alle sonstigen Methoden, die für das Preprocessing benutzt wurden.
 
+#### utils
+Erhält sonstige Utility Methoden. Wichtige Dateien sind:
+- **crossvalidation.py**: Erhält die Methode zur Crossvalidierung des FreqCNNModels
+- **plotutils.py**: Erhält Methoden zum Plotten von Signalen
+
 #### Sonstige Dateien
 
 Weitere wichtige Dateien sind:

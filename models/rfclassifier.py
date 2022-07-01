@@ -34,7 +34,7 @@ class RfClassifier(BaseModel):
         self.model_path = "model_weights/randomforest/rf_model.pkl"
         self.scaler_path = "model_weights/randomforest/scaler.pkl"
         self.explainer_path = "model_weights/randomforest/explainer.pkl"
-
+        self.explanation_data_path = "model_weights/randomforest/explanation_data.csv"
         self.scaler = preprocessing.MinMaxScaler()
         self.model = RandomForestClassifier(max_depth=30, min_samples_split=5, n_estimators=350, random_state=SEED)
 
@@ -74,6 +74,10 @@ class RfClassifier(BaseModel):
         train_data, train_labels = self.preprocess(train_data, train_labels, fs)
 
         train_data = self.scaler.fit_transform(train_data)
+        
+        train_data = pd.DataFrame(train_data, columns=self.feature_names)
+        self.check_data_means(train_data, train_labels)
+
         self.model.fit(train_data, train_labels)
 
         self.explainer = shap.TreeExplainer(self.model)
@@ -105,9 +109,9 @@ class RfClassifier(BaseModel):
         self.model = pickle.load(open(self.model_path, 'rb'))  # load saved model
         self.scaler = pickle.load(open(self.scaler_path, 'rb'))
 
-        sig, label = self.preprocess(data, dummy_labels, fs)
-
+        sig, _ = self.preprocess(data, dummy_labels, fs)
         data = self.scaler.transform(sig)
+
         pred = self.model.predict(data)
 
         return pred
@@ -164,15 +168,38 @@ class RfClassifier(BaseModel):
 
         print(grid_search.best_estimator_)
 
+    def check_data_means(self, feature_vecs, labels):
+        df = pd.DataFrame(feature_vecs, columns=self.feature_names)
+        df['label'] = labels
+
+        normal_means = df[df['label'] == 'N'].median(axis = 0)
+        atrial_means = df[df['label'] == 'A'].median(axis = 0)
+
+        means = pd.concat([normal_means, atrial_means])
+        means.to_csv(self.explanation_data_path)
+
+
     def explain_prediction(self, signal, fs=300, show_feature_amount=5):
         """
         explains the prediction for a single signal
         """
-        y_pred = self.predict([signal], fs)
+        dummy_labels = np.zeros(len(data))
+
+        self.model = pickle.load(open(self.model_path, 'rb'))  # load saved model
+        self.scaler = pickle.load(open(self.scaler_path, 'rb'))
+
+        sig, _ = self.preprocess(data, dummy_labels, fs)
+        data = self.scaler.transform(sig)
+
+        y_pred = self.model.predict(data)
+        y_pred_probs = self.model.predict_proba(data)
         
         self.explainer = pickle.load(open(self.explainer_path, 'rb'))  # load saved model
+        # means = pd.read_csv(self.explanation_data_path)
 
         print(f'label: {y_pred}')
+        print(f'label probabilities: {y_pred_probs}')
+        print(f'label probability: {max(y_pred_probs)}')
         feature_vec, _ = self.preprocess([signal], ["N"])
 
         df = pd.DataFrame(feature_vec, columns=self.feature_names)
