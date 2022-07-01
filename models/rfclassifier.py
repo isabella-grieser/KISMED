@@ -14,6 +14,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from scipy import signal, stats
 import pickle
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from preprocessing.preprocessing import *
 from preprocessing.padding import *
 from preprocessing.features import *
@@ -207,4 +209,19 @@ class RfClassifier(BaseModel):
         feature_importance = pd.DataFrame(list(zip(self.feature_names, feature_importances)),columns=['col_name','feature_importance_vals'])
         feature_importance.sort_values(by=['feature_importance_vals'], ascending=False, inplace=True)
         most_important_feats = feature_importance['col_name'].to_numpy()[:show_feature_amount]
-        return most_important_feats
+
+        importance = feature_importance['feature_importance_vals'].to_numpy()
+        importance = importance / np.sum(importance) * 100
+
+        # Create 2x2 sub plots
+        plt.figure(0, figsize=(19,14))
+        col = 16
+        row = 24
+        intro_space = plt.subplot2grid((row, col), (0, 0), colspan=col).axis('off')
+        signal_plot = plt.subplot2grid((row, col), (1, 0), colspan=col//2, rowspan=row//2-1)
+        freq_plot = plt.subplot2grid((row, col), (1,  col//2), colspan=col//2, rowspan=row//2-1)
+        text_space = plt.subplot2grid((row, col), (row//2, 0), colspan=col, rowspan=row//2).axis('off')
+
+        plt.suptitle("Explaination")
+        plt.show()
+        return most_important_feats, importance
