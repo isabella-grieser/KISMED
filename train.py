@@ -22,7 +22,7 @@ def train_freq_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, to_ev
         train_data, train_labels, val_data, val_labels, test_data, test_labels = preprocess(ecg_leads, ecg_labels,
                                                                                                 typ=TYPE)
 
-    signals, labels = divide_signal(train_data[0], train_labels[0], DATA_SIZE, LOWER_DATA_SIZE_LIMIT)
+    signals, _ = divide_signal(train_data[0], train_labels[0], DATA_SIZE, LOWER_DATA_SIZE_LIMIT)
     _, _, sprectogram = signal.spectrogram(signals[0], fs=fs, nperseg=64, noverlap=32)
 
     freqmodel = FreqCNNModel(fs, sprectogram.shape, TYPE)

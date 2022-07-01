@@ -3,6 +3,7 @@ from enum import Enum
 class ProblemType(Enum):
     FOUR_CLASS = 1
     BINARY = 2
+    NOISE = 3
 
 #data params
 TRAIN_SPLIT = .9

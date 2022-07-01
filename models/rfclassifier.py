@@ -71,12 +71,11 @@ class RfClassifier(BaseModel):
             }
         
     def train(self, train_data, train_labels, val_data, val_labels, fs, typ):
+
         train_data, train_labels = self.preprocess(train_data, train_labels, fs)
 
-        train_data = self.scaler.fit_transform(train_data)
-        
-        train_data = pd.DataFrame(train_data, columns=self.feature_names)
         self.check_data_means(train_data, train_labels)
+        train_data = self.scaler.fit_transform(train_data)
 
         self.model.fit(train_data, train_labels)
 
@@ -168,41 +167,44 @@ class RfClassifier(BaseModel):
 
         print(grid_search.best_estimator_)
 
-    def check_data_means(self, feature_vecs, labels):
-        df = pd.DataFrame(feature_vecs, columns=self.feature_names)
+    def check_data_means(self, train_data, labels):
+        df = pd.DataFrame(train_data, columns=self.feature_names)
         df['label'] = labels
 
         normal_means = df[df['label'] == 'N'].median(axis = 0)
         atrial_means = df[df['label'] == 'A'].median(axis = 0)
 
-        means = pd.concat([normal_means, atrial_means])
-        means.to_csv(self.explanation_data_path)
+        means = pd.concat([normal_means, atrial_means], axis=1).transpose()
+        means['label'] =['N', 'A']
+        means.to_csv(self.explanation_data_path, sep=';')
 
 
     def explain_prediction(self, signal, fs=300, show_feature_amount=5):
         """
         explains the prediction for a single signal
         """
-        dummy_labels = np.zeros(len(data))
 
         self.model = pickle.load(open(self.model_path, 'rb'))  # load saved model
         self.scaler = pickle.load(open(self.scaler_path, 'rb'))
 
-        sig, _ = self.preprocess(data, dummy_labels, fs)
+        sig, _ = self.preprocess([signal], ["N"], fs)
         data = self.scaler.transform(sig)
 
         y_pred = self.model.predict(data)
-        y_pred_probs = self.model.predict_proba(data)
+        y_pred_probs = self.model.predict_proba(data)[0]
         
         self.explainer = pickle.load(open(self.explainer_path, 'rb'))  # load saved model
-        # means = pd.read_csv(self.explanation_data_path)
+        
 
         print(f'label: {y_pred}')
-        print(f'label probabilities: {y_pred_probs}')
-        print(f'label probability: {max(y_pred_probs)}')
+        print(f'label probabilities: {self.model.classes_[0]}: {y_pred_probs[0]}, {self.model.classes_[1]}: {y_pred_probs[1]}')
         feature_vec, _ = self.preprocess([signal], ["N"])
 
-        df = pd.DataFrame(feature_vec, columns=self.feature_names)
         feature_vec = feature_vec[0]
 
-        return self.explainer.shap_values(feature_vec)
+        shap_values = self.explainer.shap_values(feature_vec)
+        feature_importances = np.abs(shap_values).mean(0)
+        feature_importance = pd.DataFrame(list(zip(self.feature_names, feature_importances)),columns=['col_name','feature_importance_vals'])
+        feature_importance.sort_values(by=['feature_importance_vals'], ascending=False, inplace=True)
+        most_important_feats = feature_importance['col_name'].to_numpy()[:show_feature_amount]
+        return most_important_feats
