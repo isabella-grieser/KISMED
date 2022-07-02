@@ -26,6 +26,11 @@ Der Datenordner. Dieser ist in mehreren Unterordnern unterteilt:
     - **CPSC**: Hier liegen die Daten von ...
     - **CU_SPH**: Hier liegen die Daten von ...
 
+#### explain
+Hier sind die Hilfsfunktionen für die "Explainable AI" Nebenaufgabe. Die zwei Dateien sind:
+- **explanationtexts.py**: Erhält Methode zur Generierung der Beschreibungtexte.
+- **plots.py**: Erhält Methode zur Generierung der Visualisierung der Features.
+
 #### model_weights
 Hier sind alle trainierten Modelle gespeichert, die von uns erstellt wurden. Jedes Modell hat 
 seinen eigenen Unterordner.
