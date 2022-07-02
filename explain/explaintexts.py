@@ -19,8 +19,7 @@ def create_explanation_texts(plot, most_important_feats, importance_percentages,
             comp_string = " is the same as for"
         full_text += feature_description[feat_name] + comp_string + comparison_class + "\n"
 
-    plot.text(0.005, 0.85, full_text, horizontalalignment='left', verticalalignment='center', transform=plot.transAxes, fontsize=15,
-    va='top', wrap=True)
+    plot.text(0.005, 0.85, full_text, horizontalalignment='left', verticalalignment='center', transform=plot.transAxes, fontsize=15, va='top', wrap=True)
     
     """
         if feat_name == 'Number of p peaks missed':

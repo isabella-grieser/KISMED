@@ -51,23 +51,23 @@ class RfClassifier(BaseModel):
                                     'score1': 'The proportion of R-R distances lies inside threshold', # (Range: 0 to 1, generally more value indicates N)
                                     'score2': 'The proportion of R-R distances lies inside threshold',
                                     'score3': 'The proportion of R-R distances lies inside threshold',
-                                    'sd1': 'The short-term Heart rate variability rate',
-                                    'sd2': 'The long-term Heart rate variability rate',
+                                    'sd1': 'The short-term heart variability rate',
+                                    'sd2': 'The long-term heart variability rate',
                                     'ratio': 'The unpredictability of the RR',
-                                    'beat_rate': 'The beat frequency based on R peaks',
+                                    'beat_rate': 'The heart rate',
                                     'dominant_freq': 'The dominant frequency of the signal',
                                     'energy_percent_at_dominant_freq': 'The energy ratio of the dominant frequency compared to the other frequencies',
-                                    'mean1': 'The mean of R-R distances',
-                                    'std1': 'The standard deviation of R-R distances',
+                                    'mean1': 'The mean distance between R-Peaks',
+                                    'std1': 'The variance of the distances between R-peaks',
                                     'q2_1': 'The second quarter of R-R distances',
                                     'iqr1': 'The inter quartile range of of R-R distances',
                                     'quartile_coeff_disp1': 'The quartile cofficient dispersion of R-R distances',
-                                    'mean2': 'The mean of R peaks amplitudes',
-                                    'std2': 'The standard deviation of R peaks amplitude',
+                                    'mean2': 'The mean amplitude of the R-Peaks',
+                                    'std2': 'The variance of the amplitude of the R peaks',
                                     'q2_2': 'The second quarter of R peaks amplitude',
                                     'iqr2': 'The inter quartile range quarter of R peaks amplitude',
                                     'quartile_coeff_disp2': 'The quartile cofficient dispersion of R peaks amplitude',
-                                    'mean3': 'The mean of P peaks amplitudes',
+                                    'mean3': 'The mean amplitude of the P-peaks',
                                     'std3': 'The standard deviation of P peaks amplitudes',
                                     'q2_3': 'The second quartile of P peaks amplitudes',
                                     'iqr3': 'The inter quartile range of P peaks amplitudes',
@@ -217,7 +217,7 @@ class RfClassifier(BaseModel):
 
         feature_vec_name = pd.DataFrame(feature_vec, columns=self.feature_names)
 
-        plt.figure(0, figsize=(19,14))
+        plt.figure(0, figsize=(22,10))
 
         col = 16
         row = 24
@@ -225,13 +225,13 @@ class RfClassifier(BaseModel):
         intro_space = plt.subplot2grid((row, col), (0, 0), colspan=col)
         intro_space.axis('off')
 
-        signal_plot = plt.subplot2grid((row, col), (1, 0), colspan=col//2, rowspan=row//2-1)
+        signal_plot = plt.subplot2grid((row, col), (1, 0), colspan=col//2, rowspan=row//2+2)
         signal_plot.get_yaxis().set_ticks([])
 
-        freq_plot = plt.subplot2grid((row, col), (1,  col//2), colspan=col//2, rowspan=row//2-1)
+        freq_plot = plt.subplot2grid((row, col), (1,  col//2), colspan=col//2, rowspan=row//2+2)
         freq_plot.get_yaxis().set_ticks([])
 
-        text_space = plt.subplot2grid((row, col), (row//2, 0), colspan=col, rowspan=row//2)
+        text_space = plt.subplot2grid((row, col), (row//2+3, 0), colspan=col, rowspan=row//2-2)
         text_space.axis('off')
 
         self.create_explanation_intro(intro_space, y_pred, y_pred_probs)
@@ -243,7 +243,7 @@ class RfClassifier(BaseModel):
         return most_important_feats, importance, shap_values[1][:show_feature_amount]
 
     def create_explanation_intro(self, plot, prediction, y_pred_probs):
-        txt = f"Predicted Label: {prediction}                   Label Probabilities: {self.model.classes_[0]}: {round(y_pred_probs[0], 5)},  {self.model.classes_[1]}: {round(y_pred_probs[1], 5)}"
+        txt = f"Predicted Label: {prediction}             Label Probabilities: {self.model.classes_[0]}: {round(y_pred_probs[0], 3)},  {self.model.classes_[1]}: {round(y_pred_probs[1], 3)}"
         plot.text(0.5, 2, txt, horizontalalignment='left', verticalalignment='center', transform=plot.transAxes, fontsize=25, style='oblique', ha='center',
          va='top', wrap=True)
 
