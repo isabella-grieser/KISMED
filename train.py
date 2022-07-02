@@ -1,4 +1,5 @@
 import sklearn
+import matplotlib.pyplot as plt
 
 from models.freqcnnmodel import FreqCNNModel
 from models.lstmmodel import LSTMModel
@@ -68,8 +69,7 @@ def train_rf_model(ecg_leads, ecg_labels, fs, crossval=True, train=True, to_eval
     if to_evaluate:
         evaluate(rfmodel, test_data, test_labels, is_binary=False)
 
-
-def evaluate(model, test_data, test_labels, is_binary=True):
+def evaluate(model, test_data, test_labels, fs=300, is_binary=True):
 
     start_time = time.time()
 
@@ -79,16 +79,32 @@ def evaluate(model, test_data, test_labels, is_binary=True):
 
         y_pred = model.predict(data, fs)
 
+        sklearn.metrics.ConfusionMatrixDisplay.from_predictions(labels, y_pred, labels=np.unique(labels))
+
         y_pred = [1 if y == "N" else 0 for y in y_pred]
         test_data = [1 if y == "N" else 0 for y in labels]
 
         print(sklearn.metrics.classification_report(test_data, y_pred))
     else:
-        y_pred = model.test(test_data, test_labels, fs)
-        print(y_pred)
+        y_pred = model.predict(test_data, fs)
+
+        sklearn.metrics.ConfusionMatrixDisplay.from_predictions(test_labels, y_pred, labels=np.unique(test_labels))
+
+        y_true = labels_to_encodings(test_labels)
+        y_pred = labels_to_encodings(y_pred)
+
+        metrics = {
+            "f1": sklearn.metrics.f1_score(y_true=y_true, y_pred=y_pred, average="weighted"),
+            "accuracy": sklearn.metrics.accuracy_score(y_true=y_true, y_pred=y_pred),
+            "precision": sklearn.metrics.precision_score(y_true=y_true, y_pred=y_pred, average="weighted"),
+            "recall": sklearn.metrics.recall_score(y_true=y_true, y_pred=y_pred, average="weighted")
+        }
+
+        print(metrics)
 
     pred_time = time.time() - start_time
     print(f'time needed for prediction calculation: {pred_time}')
+    plt.show()
 
 
 if __name__ == '__main__':
