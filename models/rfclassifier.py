@@ -1,3 +1,4 @@
+import imp
 from sklearn.model_selection import GridSearchCV
 
 from models.basemodel import BaseModel
@@ -19,6 +20,7 @@ import matplotlib.gridspec as gridspec
 from preprocessing.preprocessing import *
 from preprocessing.padding import *
 from preprocessing.features import *
+from explain.explaintexts import create_explanation_texts
 from utils.utils import *
 import warnings
 
@@ -45,31 +47,31 @@ class RfClassifier(BaseModel):
                               'energy_percent_at_dominant_freq', 'mean1', 'std1', 'q2_1', 'iqr1', 'quartile_coeff_disp1', 'mean2', 'std2',
                               'q2_2', 'iqr2', 'quartile_coeff_disp2', 'mean3', 'std3', 'q2_3', 'iqr3', 'quartile_coeff_disp3']
 
-        self.feature_description = {'Number of p peaks missed': 'Number of detected R peaks - Number of deteced P peaks', 
-                                    'score1': 'Indicates proporion of R-R distances lies inside threshold (Range: 0 to 1, generally more value indicates N)',
-                                    'score2': 'Indicates proporion of R-R distances lies inside threshold (Range: 0 to 1, generally more value indicates N)',
-                                    'score3': 'Indicates proporion of R-R distances lies inside threshold (Range: 0 to 1, generally more value indicates N)',
-                                    'sd1': 'short-term Heart rate variability',
-                                    'sd2': 'long-term Heart rate variability',
-                                    'ratio': 'unpredictability of the RR',
-                                    'beat_rate': 'Beats frequency based on R peaks',
-                                    'dominant_freq': 'dominant frequency',
-                                    'energy_percent_at_dominant_freq': 'TODO',
-                                    'mean1': 'Mean of R-R distances',
-                                    'std1': 'Standard deviation of R-R distances',
-                                    'q2_1': 'Second quarter of R-R distances',
-                                    'iqr1': 'Inter quartile range of of R-R distances',
-                                    'quartile_coeff_disp1': 'Quartile cofficient dispersion of R-R distances',
-                                    'mean2': 'Mean of R peaks amplitude',
-                                    'std2': 'Standard deviation of R peaks amplitude',
-                                    'q2_2': 'Second quarter of R peaks amplitude',
-                                    'iqr2': 'Inter quartile range quarter of R peaks amplitude',
-                                    'quartile_coeff_disp2': 'Quartile cofficient dispersion of R peaks amplitude',
-                                    'mean3': 'Mean of P peaks amplitude',
-                                    'std3': 'Standard deviation of P peaks amplitude',
-                                    'q2_3': 'Second quartile of P peaks amplitude',
-                                    'iqr3': 'Inter quartile range of P peaks amplitude',
-                                    'quartile_coeff_disp3': 'Quartile cofficient dispersion of P peaks amplitude'
+        self.feature_description = {'Number of p peaks missed': 'The Number of detected R peaks - Number of deteced P peaks', 
+                                    'score1': 'The proportion of R-R distances lies inside threshold', # (Range: 0 to 1, generally more value indicates N)
+                                    'score2': 'The proportion of R-R distances lies inside threshold',
+                                    'score3': 'The proportion of R-R distances lies inside threshold',
+                                    'sd1': 'The short-term Heart rate variability rate',
+                                    'sd2': 'The long-term Heart rate variability rate',
+                                    'ratio': 'The unpredictability of the RR',
+                                    'beat_rate': 'The beat frequency based on R peaks',
+                                    'dominant_freq': 'The dominant frequency of the signal',
+                                    'energy_percent_at_dominant_freq': 'The energy ratio of the dominant frequency compared to the other frequencies',
+                                    'mean1': 'The mean of R-R distances',
+                                    'std1': 'The standard deviation of R-R distances',
+                                    'q2_1': 'The second quarter of R-R distances',
+                                    'iqr1': 'The inter quartile range of of R-R distances',
+                                    'quartile_coeff_disp1': 'The quartile cofficient dispersion of R-R distances',
+                                    'mean2': 'The mean of R peaks amplitudes',
+                                    'std2': 'The standard deviation of R peaks amplitude',
+                                    'q2_2': 'The second quarter of R peaks amplitude',
+                                    'iqr2': 'The inter quartile range quarter of R peaks amplitude',
+                                    'quartile_coeff_disp2': 'The quartile cofficient dispersion of R peaks amplitude',
+                                    'mean3': 'The mean of P peaks amplitudes',
+                                    'std3': 'The standard deviation of P peaks amplitudes',
+                                    'q2_3': 'The second quartile of P peaks amplitudes',
+                                    'iqr3': 'The inter quartile range of P peaks amplitudes',
+                                    'quartile_coeff_disp3': 'The quartile cofficient dispersion of P peaks amplitudes'
             }
         
     def train(self, train_data, train_labels, val_data, val_labels, fs, typ):
@@ -173,6 +175,7 @@ class RfClassifier(BaseModel):
         df = pd.DataFrame(train_data, columns=self.feature_names)
         df['label'] = labels
 
+        # calculate the medians for the features of the two different classes
         normal_means = df[df['label'] == 'N'].median(axis = 0)
         atrial_means = df[df['label'] == 'A'].median(axis = 0)
 
@@ -183,45 +186,64 @@ class RfClassifier(BaseModel):
 
     def explain_prediction(self, signal, fs=300, show_feature_amount=5):
         """
-        explains the prediction for a single signal
+        explains the prediction for a single signal and returns the n most important features, the relevance in percent and their corresponding marginal values
         """
 
-        self.model = pickle.load(open(self.model_path, 'rb'))  # load saved model
+        self.model = pickle.load(open(self.model_path, 'rb'))
         self.scaler = pickle.load(open(self.scaler_path, 'rb'))
+        self.explainer = pickle.load(open(self.explainer_path, 'rb')) 
+        self.means = pd.read_csv(self.explanation_data_path, sep=';')
 
-        sig, _ = self.preprocess([signal], ["N"], fs)
-        data = self.scaler.transform(sig)
+        feature_vec, _ = self.preprocess([signal], ["N"], fs)
+        data = self.scaler.transform(feature_vec)
 
-        y_pred = self.model.predict(data)
+        y_pred = self.model.predict(data)[0]
         y_pred_probs = self.model.predict_proba(data)[0]
-        
-        self.explainer = pickle.load(open(self.explainer_path, 'rb'))  # load saved model
-        
 
-        print(f'label: {y_pred}')
-        print(f'label probabilities: {self.model.classes_[0]}: {y_pred_probs[0]}, {self.model.classes_[1]}: {y_pred_probs[1]}')
-        feature_vec, _ = self.preprocess([signal], ["N"])
-
-        feature_vec = feature_vec[0]
-
-        shap_values = self.explainer.shap_values(feature_vec)
+        shap_values = self.explainer.shap_values(data[0])
         feature_importances = np.abs(shap_values).mean(0)
+
+        # sort by feature importance
         feature_importance = pd.DataFrame(list(zip(self.feature_names, feature_importances)),columns=['col_name','feature_importance_vals'])
         feature_importance.sort_values(by=['feature_importance_vals'], ascending=False, inplace=True)
+
+        # get the most important feature names
         most_important_feats = feature_importance['col_name'].to_numpy()[:show_feature_amount]
 
+        # get the feature importance percentage
         importance = feature_importance['feature_importance_vals'].to_numpy()
         importance = importance / np.sum(importance) * 100
+        importance = importance[:show_feature_amount]
 
-        # Create 2x2 sub plots
+        feature_vec_name = pd.DataFrame(feature_vec, columns=self.feature_names)
+
         plt.figure(0, figsize=(19,14))
+
         col = 16
         row = 24
-        intro_space = plt.subplot2grid((row, col), (0, 0), colspan=col).axis('off')
-        signal_plot = plt.subplot2grid((row, col), (1, 0), colspan=col//2, rowspan=row//2-1)
-        freq_plot = plt.subplot2grid((row, col), (1,  col//2), colspan=col//2, rowspan=row//2-1)
-        text_space = plt.subplot2grid((row, col), (row//2, 0), colspan=col, rowspan=row//2).axis('off')
 
-        plt.suptitle("Explaination")
+        intro_space = plt.subplot2grid((row, col), (0, 0), colspan=col)
+        intro_space.axis('off')
+
+        signal_plot = plt.subplot2grid((row, col), (1, 0), colspan=col//2, rowspan=row//2-1)
+        signal_plot.get_yaxis().set_ticks([])
+
+        freq_plot = plt.subplot2grid((row, col), (1,  col//2), colspan=col//2, rowspan=row//2-1)
+        freq_plot.get_yaxis().set_ticks([])
+
+        text_space = plt.subplot2grid((row, col), (row//2, 0), colspan=col, rowspan=row//2)
+        text_space.axis('off')
+
+        self.create_explanation_intro(intro_space, y_pred, y_pred_probs)
+        create_explanation_texts(text_space, most_important_feats, importance, feature_vec_name, y_pred, self.means, self.feature_description)
+
+        plt.suptitle("Explaination", fontsize=40)
         plt.show()
-        return most_important_feats, importance
+
+        return most_important_feats, importance, shap_values[1][:show_feature_amount]
+
+    def create_explanation_intro(self, plot, prediction, y_pred_probs):
+        txt = f"Predicted Label: {prediction}                   Label Probabilities: {self.model.classes_[0]}: {round(y_pred_probs[0], 5)},  {self.model.classes_[1]}: {round(y_pred_probs[1], 5)}"
+        plot.text(0.5, 2, txt, horizontalalignment='left', verticalalignment='center', transform=plot.transAxes, fontsize=25, style='oblique', ha='center',
+         va='top', wrap=True)
+

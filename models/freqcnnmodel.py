@@ -26,13 +26,7 @@ class FreqCNNModel(BaseModel):
     def __init__(self, fs, dims, typ=ProblemType.BINARY):
 
         super(BaseModel, self).__init__()
-        if typ == ProblemType.BINARY:
-            folder = 'binary'
-        elif typ == ProblemType.NOISE:
-            folder = 'noise'
-        else:
-            folder = 'multiclass'
-        self.model_path = f"model_weights/freqcnn/{folder}/model-{MODEL_VERSION}.hdf5"
+        self.model_path = f"model_weights/freqcnn/{'binary' if typ == ProblemType.BINARY else 'multiclass'}/model-{MODEL_VERSION}.hdf5"
         self.num_classes = 2 if typ == ProblemType.BINARY else 4
         self.typ = typ
         self.dims = dims
@@ -135,8 +129,7 @@ class FreqCNNModel(BaseModel):
         return encodings_to_labels(y_pred)
 
     def preprocess(self, signals, labels, fs, train=True):
-        if self.typ != ProblemType.NOISE:
-            signals = [remove_noise_butterworth(s, fs) for s in signals]
+        signals = [remove_noise_butterworth(s, fs) for s in signals]
 
         signals, labels = divide_all_signals_with_lower_limit(signals, labels, DATA_SIZE, LOWER_DATA_SIZE_LIMIT)
 
