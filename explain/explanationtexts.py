@@ -8,7 +8,7 @@ def create_explanation_texts(plot, most_important_feats, importance_percentages,
     rel_median = median[median['label'] != label] 
 
     for feat_name, percent in zip(most_important_feats, importance_percentages):
-        full_text += f"Rel: {round(percent, 3)}%     "
+        full_text += f"Rel: {round(percent, 2)}%    "
         other_median = rel_median[feat_name].to_numpy()[0]
         feature_comparison = feature_vec[feat_name].to_numpy()[0] - other_median
         if feature_comparison < other_median*(1-threshold):

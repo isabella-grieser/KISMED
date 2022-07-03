@@ -48,7 +48,7 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
 # Euer Code ab hier
 
 
-    if is_binary_classifier:
+    if not is_binary_classifier:
         model = RfClassifier()
 
         y_pred = model.predict(ecg_leads, fs)
@@ -56,7 +56,7 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
         signals, labels = divide_signal(ecg_leads[0], ["N"], DATA_SIZE, LOWER_DATA_SIZE_LIMIT)
         _, _, sprectogram = signal.spectrogram(signals[0], fs=fs, nperseg=64, noverlap=32)
 
-        model = FreqCNNModel(fs, sprectogram.shape, ProblemType.FOUR_CLASS)
+        model = FreqCNNModel(fs, sprectogram.shape, ProblemType.BINARY)
 
         y_pred = model.predict(ecg_leads, fs)
 
