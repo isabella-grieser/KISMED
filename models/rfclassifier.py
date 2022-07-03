@@ -20,7 +20,7 @@ import matplotlib.gridspec as gridspec
 from preprocessing.preprocessing import *
 from preprocessing.padding import *
 from preprocessing.features import *
-from explain.explaintexts import create_explanation_texts
+from explain.explanationtexts import create_explanation_texts
 from utils.utils import *
 import warnings
 
@@ -47,7 +47,7 @@ class RfClassifier(BaseModel):
                               'energy_percent_at_dominant_freq', 'mean1', 'std1', 'q2_1', 'iqr1', 'quartile_coeff_disp1', 'mean2', 'std2',
                               'q2_2', 'iqr2', 'quartile_coeff_disp2', 'mean3', 'std3', 'q2_3', 'iqr3', 'quartile_coeff_disp3']
 
-        self.feature_description = {'Number of p peaks missed': 'The Number of detected R peaks - Number of deteced P peaks', 
+        self.feature_description = {'Number of p peaks missed': 'The R-Peak to P-Peak difference (Amount of R-Peaks - Amount of P-Peaks)', 
                                     'score1': 'The proportion of R-R distances lies inside threshold', # (Range: 0 to 1, generally more value indicates N)
                                     'score2': 'The proportion of R-R distances lies inside threshold',
                                     'score3': 'The proportion of R-R distances lies inside threshold',
