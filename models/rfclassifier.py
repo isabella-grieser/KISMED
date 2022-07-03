@@ -183,6 +183,58 @@ class RfClassifier(BaseModel):
         means['label'] =['N', 'A']
         means.to_csv(self.explanation_data_path, sep=';')
 
+    def distribution_score_for_explain(self, r_peaks, sig):
+        
+        first_peak = r_peaks[0]
+        last_peak = r_peaks[-1]
+        sig = sig[first_peak: last_peak + 1]
+        samples_per_beat = len(sig) / (len(r_peaks) - 1)
+        # Set threshold, Hardcoded for now, Need to automate later
+        lower_thresh = samples_per_beat - 30
+        higher_thresh = samples_per_beat + 30
+        cumdiff = np.diff(r_peaks)
+        # Number of R-R durations lie inside threshold
+        #error1 = ([i for i in cumdiff if i > lower_thresh and i < higher_thresh])
+        slow1 = np.where(cumdiff < lower_thresh)
+        fast1 = np.where(cumdiff > higher_thresh)
+        slow1 = [r_peaks[x+1] for x in slow1]  #returns index of abnormality
+        fast1 = [r_peaks[x+1] for x in fast1]  #returns index of abnormality
+        
+        max1 = np.quantile(cumdiff, 0.5)
+        # max1 = x[np.argmax(y)]
+        # print(max1)
+        lower_thresh = max1 - 30
+        higher_thresh = max1 + 30
+        # Number of R-R durations lie inside threshold
+        len_center_idx = len([i for i in cumdiff if i < lower_thresh and i > higher_thresh])
+        score2 = len_center_idx / len(cumdiff)    
+        slow2 = np.where(cumdiff<lower_thresh)
+        fast2 = np.where(cumdiff>higher_thresh)
+        slow2 = [r_peaks[x+1] for x in slow2]  #returns index of abnormality
+        fast2 = [r_peaks[x+1] for x in fast2]  #returns index of abnormality
+    
+        return slow1, fast1, slow2, fast2
+
+
+
+    
+    def explain_freq_plot(self, sig, fs = 300):
+        fourierTransform = np.fft.fft(sig)/len(sig)
+        fourierTransform = fourierTransform[range(int(len(sig)/2))]
+        fourierTransform = abs(fourierTransform)
+
+        tpCount     = len(sig)
+        values      = np.arange(int(tpCount/2))
+        timePeriod  = tpCount/fs
+        frequencies = values/timePeriod
+
+        f, Pxx_den = signal.periodogram(sig, 300)
+        max_y = max(Pxx_den)  # Find the maximum y value
+        max_amp = max(abs(fourierTransform))
+        max_x = frequencies[fourierTransform.argmax()]     
+        
+        return max_x, fourierTransform[0:1500], frequencies[0:1500] #Display only till 50 Hz
+
 
     def explain_prediction(self, signal, fs=300, show_feature_amount=5):
         """
@@ -217,6 +269,13 @@ class RfClassifier(BaseModel):
 
         feature_vec_name = pd.DataFrame(feature_vec, columns=self.feature_names)
 
+        ####explain_plot_params
+        r_peaks, p_peaks = extract_r_p_peaks(signal, fs=300)
+        slow1, fast1, slow2, fast2 = self.distribution_score_for_explain(r_peaks, signal)
+        errors = np.concatenate((slow1, fast1, slow2, fast2), axis=None)
+        dom_freq, fourier_transform, freq = self.explain_freq_plot(signal, fs=300)
+
+        
         plt.figure(0, figsize=(22,10))
 
         col = 16
@@ -225,10 +284,23 @@ class RfClassifier(BaseModel):
         intro_space = plt.subplot2grid((row, col), (0, 0), colspan=col)
         intro_space.axis('off')
 
-        signal_plot = plt.subplot2grid((row, col), (1, 0), colspan=col//2, rowspan=row//2+2)
+        signal_plot = plt.subplot2grid((row, col), (1, 0), colspan=col//2, rowspan=row//2-1)
+        signal_plot.plot(signal)
+        signal_plot.scatter(errors, signal[errors], color = 'r' ,label = "Abnormal R peaks" )
+        signal_plot.legend()
+        plt.xlabel("ECG sample count")
+        plt.ylabel("amplitude")
+        plt.title("ECG signal in time domain")
         signal_plot.get_yaxis().set_ticks([])
 
-        freq_plot = plt.subplot2grid((row, col), (1,  col//2), colspan=col//2, rowspan=row//2+2)
+        freq_plot = plt.subplot2grid((row, col), (1,  col//2), colspan=col//2, rowspan=row//2-1)
+        plt.plot(freq, fourier_transform)
+        plt.axvline(x = dom_freq, color = 'r', label = 'Dominant frequency of this ECG')
+        plt.axvspan(1, 1.67, alpha=0.5, color='g', label = "Normal ECG frequecy range")  # 1 Hz to 1.67 Hz is the normal ecg range
+        plt.legend()
+        plt.title("ECG signal in frequency domain")
+        plt.xlabel("Frequencyin Hz")
+        plt.ylabel("amplitude")
         freq_plot.get_yaxis().set_ticks([])
 
         text_space = plt.subplot2grid((row, col), (row//2+3, 0), colspan=col, rowspan=row//2-2)
