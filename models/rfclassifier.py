@@ -300,7 +300,6 @@ class RfClassifier(BaseModel):
         plt.legend()
         plt.title("ECG signal in frequency domain")
         plt.xlabel("Frequencyin Hz")
-        plt.ylabel("amplitude")
         freq_plot.get_yaxis().set_ticks([])
 
         text_space = plt.subplot2grid((row, col), (row//2+3, 0), colspan=col, rowspan=row//2-2)
@@ -309,7 +308,7 @@ class RfClassifier(BaseModel):
         self.create_explanation_intro(intro_space, y_pred, y_pred_probs)
         create_explanation_texts(text_space, most_important_feats, importance, feature_vec_name, y_pred, self.means, self.feature_description)
 
-        plt.suptitle("Explaination", fontsize=40)
+        plt.suptitle("Explanation", fontsize=40)
         plt.show()
 
         return most_important_feats, importance, shap_values[1][:show_feature_amount]
