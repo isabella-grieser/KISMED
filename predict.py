@@ -20,8 +20,10 @@ from models.rfclassifier import RfClassifier
 from preprocessing.padding import divide_signal
 from utils.utils import *
 
+
 ###Signatur der Methode (Parameter und Anzahl return-Werte) darf nicht verändert werden
-def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[str], model_name : str='model.npy',is_binary_classifier : bool=False) -> List[Tuple[str,str]]:
+def predict_labels(ecg_leads: List[np.ndarray], fs: float, ecg_names: List[str], model_name: str = 'model.npy',
+                   is_binary_classifier: bool = False) -> List[Tuple[str, str]]:
     '''
     Parameters
     ----------
@@ -44,11 +46,10 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
         ecg_name und eure Diagnose
     '''
 
-#------------------------------------------------------------------------------
-# Euer Code ab hier
+    # ------------------------------------------------------------------------------
+    # Euer Code ab hier
 
-
-    if not is_binary_classifier:
+    if is_binary_classifier:
         model = RfClassifier()
 
         y_pred = model.predict(ecg_leads, fs)
@@ -56,13 +57,10 @@ def predict_labels(ecg_leads : List[np.ndarray], fs : float, ecg_names : List[st
         signals, labels = divide_signal(ecg_leads[0], ["N"], DATA_SIZE, LOWER_DATA_SIZE_LIMIT)
         _, _, sprectogram = signal.spectrogram(signals[0], fs=fs, nperseg=64, noverlap=32)
 
-        model = FreqCNNModel(fs, sprectogram.shape, ProblemType.BINARY)
+        model = FreqCNNModel(fs, sprectogram.shape, ProblemType.FOUR_CLASS)
 
         y_pred = model.predict(ecg_leads, fs)
 
     predictions = list(zip(ecg_names, y_pred))
-#------------------------------------------------------------------------------    
-    return predictions # Liste von Tupels im Format (ecg_name,label) - Muss unverändert bleiben!
-                               
-                               
-        
+    # ------------------------------------------------------------------------------
+    return predictions  # Liste von Tupels im Format (ecg_name,label) - Muss unverändert bleiben!

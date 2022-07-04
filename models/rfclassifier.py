@@ -193,7 +193,7 @@ class RfClassifier(BaseModel):
         self.model = pickle.load(open(self.model_path, 'rb'))
         self.scaler = pickle.load(open(self.scaler_path, 'rb'))
         self.explainer = pickle.load(open(self.explainer_path, 'rb')) 
-        self.means = pd.read_csv(self.explanation_data_path, sep=';')
+        means = pd.read_csv(self.explanation_data_path, sep=';')
 
         feature_vec, _ = self.preprocess([signal], ["N"], fs)
         data = self.scaler.transform(feature_vec)
@@ -258,7 +258,7 @@ class RfClassifier(BaseModel):
         text_space.axis('off')
 
         self.create_explanation_intro(intro_space, y_pred, y_pred_probs)
-        create_explanation_texts(text_space, most_important_feats, importance, feature_vec_name, y_pred, self.means, self.feature_description)
+        create_explanation_texts(text_space, most_important_feats, importance, feature_vec_name, y_pred, means, self.feature_description)
 
         plt.suptitle("Explanation", fontsize=40)
         plt.show()
