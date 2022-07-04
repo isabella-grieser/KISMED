@@ -49,9 +49,9 @@ class RfClassifier(BaseModel):
                               'q2_2', 'iqr2', 'quartile_coeff_disp2', 'mean3', 'std3', 'q2_3', 'iqr3', 'quartile_coeff_disp3']
 
         self.feature_description = {'Number of p peaks missed': 'The R-Peak to P-Peak difference (Amount of R-Peaks - Amount of P-Peaks)', 
-                                    'score1': 'The proportion of R-R distances lies inside threshold', # (Range: 0 to 1, generally more value indicates N)
-                                    'score2': 'The proportion of R-R distances lies inside threshold',
-                                    'score3': 'The proportion of R-R distances lies inside threshold',
+                                    'score1': 'The proportion of R-R distances lies inside ±30 limit with respect to average number of samples per heartbeat',
+                                    'score2': 'The proportion of R-R distances lies inside ±30 limit with respect to second quarter of the distribution of the R-peak to R-peak distances',
+                                    'score3': 'The proportion of R-R distances lies inside ±1 standard deviation with respect to second quarter of the distribution of the R-peak to R-peak distances',
                                     'sd1': 'The short-term heart variability rate',
                                     'sd2': 'The long-term heart variability rate',
                                     'ratio': 'The unpredictability of the heartbeat rate',
