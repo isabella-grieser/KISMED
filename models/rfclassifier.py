@@ -124,27 +124,33 @@ class RfClassifier(BaseModel):
         X, y = [], []
         for i in range(len(signals)):
             # description of the features: see the feature description dictionary
-            signal = invert2(signals[i])
-            signal = nk.ecg_clean(signal, sampling_rate=fs, method="neurokit")
-            # sig = remove_noise_butterworth(sig, 300)
-            r_peaks, p_peaks = extract_r_p_peaks(signal, fs)
+            signal = invert2(signals[i])  #invert signal if needed
+            signal = nk.ecg_clean(signal, sampling_rate=fs, method="neurokit") 
+            r_peaks, p_peaks = extract_r_p_peaks(signal, fs)   #Extract R an P peaks
             len_r = len(r_peaks)
             len_p = len(p_peaks)
+            #Find amplitudes of ECG signal at R and P peaks
             amp_r = [signal[i] for i in r_peaks]
             amp_p = [signal[i] for i in p_peaks]
-            sd1, sd2, ratio = poincare_sd(r_peaks)
+            
+            sd1, sd2, ratio = poincare_sd(r_peaks) #Extract short-term and long-term heart variability rate
 
-            cumdiff_r = np.diff(r_peaks)
+            cumdiff_r = np.diff(r_peaks)           #Cumulative difference between R peak occurences
 
+            #Extract statistical features of R-R durations, R peak amplitudes and P peak amplitudes
             mean1, std1, q2_1, iqr1, quartile_coeff_disp1 = stats_features(cumdiff_r)
             mean2, std2, q2_2, iqr2, quartile_coeff_disp2 = stats_features(amp_r)
             mean3, std3, q2_3, iqr3, quartile_coeff_disp3 = stats_features(amp_p)
 
+            #Extract distribution scores of R-R durations (Score definitions are in feature descriptions)
             score1, score2, score3 = distribution_score(r_peaks, signal)
 
+            #Extract frequency respocnse features
             dom_freq, energy_percent_at_dom = dominant_freq(signal)
             beat_rate = beats_per_sec(signal, len_r)
 
+
+            #An array of all al features
             array = [(len_r - len_p), score1, score2, score3, sd1, sd2, ratio, beat_rate, dom_freq,
                      energy_percent_at_dom, mean1,
                      std1, q2_1, iqr1, quartile_coeff_disp1, mean2, std2, q2_2, iqr2, quartile_coeff_disp2, mean3, std3,
@@ -239,7 +245,6 @@ class RfClassifier(BaseModel):
         signal_plot = plt.subplot2grid((row, col), (1, 0), colspan=col//2, rowspan=row//2-1)
         signal_plot.plot(signal)
 
-        #### add if statement: if pred == 'A': then only errors will be plotted
         signal_plot.scatter(errors, signal[errors], color = 'r' ,label = f"Abnormal R peaks (Rel. of feat.: {round(feats['quartile_coeff_disp1'], 3)})" )
         signal_plot.legend()
         plt.xlabel("ECG sample count")

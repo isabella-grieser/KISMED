@@ -30,7 +30,8 @@ def extract_r_p_peaks(sig, fs):
 
 
 
-def poincare_sd(r_peaks):  # input argument r_peaks in samples only
+def poincare_sd(r_peaks):
+    #input argument r_peaks in sample format only
     try:
         r_peaks = r_peaks * 10 / 3  # Convert r_peaks from samples to time of occurence in millisec
         rr = np.diff(r_peaks)
@@ -50,13 +51,13 @@ def poincare_sd(r_peaks):  # input argument r_peaks in samples only
 def stats_features(points):
     try:
         points = np.array(points)
-        mean = points.mean()
-        std = points.std()
-        q2 = np.quantile(points, 0.5)
-        q1 = np.quantile(points, 0.25)
-        q3 = np.quantile(points, 0.75)
-        iqr = q3 - q1
-        quartile_coeff_disp = (q3 - q1) / (q3 + q1)
+        mean = points.mean()    #Mean of points
+        std = points.std()      # Standard deviation of points  
+        q2 = np.quantile(points, 0.5)   #Second quartile of distribution of points
+        q1 = np.quantile(points, 0.25)  #First quartile of distribution of points
+        q3 = np.quantile(points, 0.75)  #Third quartile of distribution of points
+        iqr = q3 - q1                   #Inter quartile range of distribution of points
+        quartile_coeff_disp = (q3 - q1) / (q3 + q1) #Quartile coefficient dispersion of distribution of points
 
     except Exception:
         mean, std, q2, iqr, quartile_coeff_disp = 0, 0, 0, 0, 0
@@ -67,22 +68,21 @@ def stats_features(points):
 def dominant_freq(sig):
     try:
         f, Pxx_den = signal.periodogram(sig, 300)
-        max_y = max(Pxx_den)  # Find the maximum y value
-        max_x = f[Pxx_den.argmax()]  # Find the x value corresponding to the maximum y value
+        max_y = max(Pxx_den)  # Find the maximum power
+        max_x = f[Pxx_den.argmax()]  # Find the frequency corresponding to the maximum power
         energy_percentile = max_y / Pxx_den.sum()
     except Exception:
         max_x, energy_percentile = 0, 0
-    return max_x, energy_percentile  # returns dominant frequency in Hertz
+    return max_x, energy_percentile  # returns dominant frequency in Hertz and percenatge of energy at that frequency
 
 
 def beats_per_sec(sig, rpeaks):
     try:
         duration_sec = len(sig) * (1 / 300)  # Duration of signal in seconds
-        # beats = len(r_peaks)
         beats_per_sec = rpeaks / duration_sec
     except Exception:
         beats_per_sec = 0
-    return beats_per_sec  # Generally Normal Beats_per_sec: 1 to 1.67, (Not always followed)
+    return beats_per_sec  # Generally Normal Beats_per_sec: 1 to 1.67
 
 
 def distribution_score(r_peaks, sig):
@@ -96,23 +96,18 @@ def distribution_score(r_peaks, sig):
         lower_thresh = samples_per_beat - 30
         higher_thresh = samples_per_beat + 30
         cumdiff = np.diff(r_peaks)
-        # Number of R-R durations lie inside threshold
         len_center_idx = len([i for i in cumdiff if i > lower_thresh and i < higher_thresh])
         score1 = len_center_idx / len(cumdiff)
         # calculate score 2 ##
         max1 = np.quantile(cumdiff, 0.5)
-        # max1 = x[np.argmax(y)]
-        # print(max1)
         lower_thresh = max1 - 30
         higher_thresh = max1 + 30
-        # Number of R-R durations lie inside threshold
         len_center_idx = len([i for i in cumdiff if i > lower_thresh and i < higher_thresh])
         score2 = len_center_idx / len(cumdiff)
         ## calculate score 3 ##
         std = np.std(cumdiff)
         lower_thresh = max1 - std
         higher_thresh = max1 + std
-        # Number of R-R durations lie inside threshold
         len_center_idx = len([i for i in cumdiff if i > lower_thresh and i < higher_thresh])
         score3 = len_center_idx / len(cumdiff)
         
