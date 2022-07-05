@@ -91,14 +91,15 @@ def distribution_score(r_peaks, sig):
         last_peak = r_peaks[-1]
         sig = sig[first_peak: last_peak + 1]
         samples_per_beat = len(sig) / (len(r_peaks) - 1)
-        # Set threshold, Hardcoded for now, Need to automate later
+
+        ## calculate score 1 ##
         lower_thresh = samples_per_beat - 30
         higher_thresh = samples_per_beat + 30
         cumdiff = np.diff(r_peaks)
         # Number of R-R durations lie inside threshold
         len_center_idx = len([i for i in cumdiff if i > lower_thresh and i < higher_thresh])
         score1 = len_center_idx / len(cumdiff)
-        ##################################################################################################
+        # calculate score 2 ##
         max1 = np.quantile(cumdiff, 0.5)
         # max1 = x[np.argmax(y)]
         # print(max1)
@@ -107,61 +108,16 @@ def distribution_score(r_peaks, sig):
         # Number of R-R durations lie inside threshold
         len_center_idx = len([i for i in cumdiff if i > lower_thresh and i < higher_thresh])
         score2 = len_center_idx / len(cumdiff)
-        ##################################################################################################
+        ## calculate score 3 ##
         std = np.std(cumdiff)
         lower_thresh = max1 - std
         higher_thresh = max1 + std
         # Number of R-R durations lie inside threshold
         len_center_idx = len([i for i in cumdiff if i > lower_thresh and i < higher_thresh])
         score3 = len_center_idx / len(cumdiff)
-        ###################################################################################################
+        
     except Exception:
         score1, score2, score3 = 0, 0, 0
     return score1, score2, score3
 
 
-def compute_FFT(sig, fs=300):
-    spectrum = fftpack.fft(sig)
-    spectrum = 2 / len(sig) * np.abs(spectrum[:len(sig) // 2])
-    freq = np.linspace(0.0, fs / 2.0, len(sig) // 2)
-    return (freq, spectrum)
-
-
-def compute_PSD(sig, fs=300):
-    spectrum = np.fft.fft(sig)
-    factor = 2.0 / (len(spectrum) * len(spectrum))
-    power = factor * (spectrum.real ** 2 + spectrum.imag ** 2)
-    freq = np.fft.fftfreq(len(sig), 1 / fs)
-    freq = freq[0:int(len(sig) / 2)]
-    power = power[0:int(len(sig) / 2)]
-    return (freq, power)
-
-
-def compute_Band_Power(sig, lb, ub, fs=300, psd=False):
-    if psd:
-        ecg_freq, ecg_spectrum = compute_PSD(signal, fs)
-    else:
-        ecg_freq, ecg_spectrum = compute_FFT(sig, fs)
-    mask = np.logical_and((ecg_freq > lb), (ecg_freq <= ub))
-    band_power = np.sum(ecg_spectrum[mask] ** 2) / np.sum(ecg_spectrum ** 2)
-    return band_power
-
-
-def compute_beat_fib_power(ecg_lead, fs=300, invert=False, psd=False):
-    used_ecg_lead = ecg_lead
-    if invert: used_ecg_lead = invert2(ecg_lead)  # invert if needed
-    # Compute normalized power in 'fib' frequency band for every heart beat
-    beats = divide_heartbeats(used_ecg_lead, fs=fs)
-    all_fib_powers = [compute_Band_Power(b, lb=3.8, ub=8) for b in beats]
-    return all_fib_powers
-
-
-def max_beat_fib_power(ecg, fs=300, invert=True, psd=False, calib_th=1):
-    beat_fib_power = compute_beat_fib_power(ecg, fs, invert=invert, psd=psd)
-
-    if len(beat_fib_power) == 0:
-        return (-1)
-    elif len(beat_fib_power) <= 2 * calib_th:
-        return np.max(beat_fib_power)
-    else:
-        return np.max(beat_fib_power[calib_th:-calib_th])

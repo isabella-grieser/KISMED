@@ -238,6 +238,8 @@ class RfClassifier(BaseModel):
 
         signal_plot = plt.subplot2grid((row, col), (1, 0), colspan=col//2, rowspan=row//2-1)
         signal_plot.plot(signal)
+
+        #### add if statement: if pred == 'A': then only errors will be plotted
         signal_plot.scatter(errors, signal[errors], color = 'r' ,label = f"Abnormal R peaks (Rel. of feat.: {round(feats['quartile_coeff_disp1'], 3)})" )
         signal_plot.legend()
         plt.xlabel("ECG sample count")
