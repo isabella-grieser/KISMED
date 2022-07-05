@@ -17,8 +17,6 @@ welcher Features aus dem EKG extrahiert und diese nutzt um ein EKG mit Atrial Fi
 Das zweite Modell ist ein Convolutional Neural Network, welches das aufgezeichnete Signal des EKGs in Form eines Spektrogramms untersucht und
 anschließend entscheidet, ob das Signal des Typs "Normal Heartbeat", "Atrial Fibrillation", "Other Signal Type" oder "Noise" ist.
 
-#TODO: noch die Besonderheiten erklären
-
 
 
 ### Projektstruktur
